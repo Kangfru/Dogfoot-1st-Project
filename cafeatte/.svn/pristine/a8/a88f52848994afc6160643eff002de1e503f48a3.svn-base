@@ -1,0 +1,163 @@
+package com.cafeatte.qna.controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import com.cafeatte.main.Controller;
+import com.cafeatte.main.Execute;
+import com.cafeatte.main.Service;
+import com.cafeatte.member.dto.LoginDTO;
+import com.cafeatte.qna.dto.QnaDTO;
+import com.cafeatte.util.page.PageObject;
+
+
+
+public class QnaController implements Controller {
+
+	private Service listService; 
+	private Service viewService; 
+	private Service writeService; 
+	private Service updateService; 
+	private Service deleteService; 
+	private Service answerService;
+	
+
+	// 생성자를 이용해서 service DI(Dependent 적용 --> Beans에서 생성 후 넣어 준다. 
+	public QnaController(
+			Service listService,
+			Service viewService,
+			Service writeService,
+			Service updateService,
+			Service deleteService, 
+		    Service answerService 
+		   ){
+		// TODO Auto-generated constructor stub
+		
+		this.listService = listService;
+		this.viewService = viewService;
+		this.writeService = writeService;
+		this.updateService = updateService;
+		this.deleteService = deleteService;
+		this.answerService = answerService;
+	}
+	
+	
+	// 글번호 변수
+	String noStr = "";
+	// 한페이지에 표시할 데이터의 갯수
+	String perPageNumStr = "";
+	
+	//데이버 수정이나 삭제시 지워야할 파일
+	String deleteFileName = null;
+	
+	
+	
+	
+	@Override
+	public String execute(HttpServletRequest request,
+			HttpServletResponse response, String uri) 
+			throws Exception {
+		// TODO Auto-generated method stub
+		
+		// 공통으로 사용되는 변수 (초기값셋팅)
+		String jsp = "";
+		PageObject pageObject =PageObject.getInstance(request.getParameter("page"), 
+				request.getParameter("perPageNum"));
+		
+		// 검색에 대한 데이터 셋팅
+					String key = request.getParameter("key");
+					String word = request.getParameter("word");
+					if(word != null) {
+						
+						pageObject.setKey(key);
+						pageObject.setWord(word);
+					}	
+				
+		//jsp에서 자바 부분을 여기에 넣는다. 
+		switch(uri) {
+		case "/qna/list.do":
+			request.setAttribute("pageObject", pageObject);
+			request.setAttribute("list", Execute.service(listService,pageObject));
+			
+			jsp = "qna/list";
+			
+			break;
+
+		case "/qna/view.do":	
+			
+			int no = Integer.parseInt(request.getParameter("no"));   
+			int cnt = Integer.parseInt(request.getParameter("cnt"));   
+			request.setAttribute("dto", Execute.service(viewService, no, cnt));
+				
+			jsp = "qna/view";
+			
+			;
+			break;
+		case "/qna/writeForm.do":	
+			jsp = "qna/writeForm";
+			break;
+		
+		case "/qna/write.do":	
+			Execute.service(writeService, 
+					getDTO(request));
+			
+			System.out.println("질문 쓰기 실행 ===============");
+			// 자동으로 리스트로 이동시켜야 한다.
+			jsp ="redirect:list.do?page=1&perPageNum="
+					+request.getParameter("perPageNum");
+			break;
+			
+		case "/qna/delete.do":	
+			 
+			Execute.service(deleteService, Integer.parseInt(request.getParameter("no")));
+			jsp = "redirect:list.do";
+			break;
+		
+				
+		default:
+			break;
+		}
+		System.out.println("QnaController.execute().jsp"+jsp);
+		return jsp;
+	}
+
+
+	// 주로 글수정 할때 사용되는 메서드 
+	private QnaDTO getDTO(int no, String id, String title,String content, String writeDate) {
+		QnaDTO dto = getDTO(no, id,title, content, writeDate);
+		dto.setNo(no);
+		return dto;
+	}
+	
+	// 쓰기나 수정하는 경우 이 메서드 부터 시작이 된다. -> no가 있으면 수정, 없으면 쓰기
+	@SuppressWarnings("null")
+	private QnaDTO getDTO(HttpServletRequest request) throws Exception {
+		HttpSession session = request.getSession();
+		LoginDTO dto = (LoginDTO) session.getAttribute("login");
+		String id = dto.getId();
+
+		
+		// 한페이지에 표시할 데이터의 갯수
+		perPageNumStr = request.getParameter("perPageNum");
+
+		noStr = request.getParameter("no");
+
+		// 글번호가 들어오면 - 업데이터(수정)
+		if(noStr != null && !noStr.equals("")) {
+		deleteFileName = request.getParameter("deleteFile");
+		return getDTO(Integer.parseInt(noStr),
+				request.getParameter("title"),
+				request.getParameter("content"), 
+				request.getParameter("writeDate"),id);
+		}
+		// 글번호가 들어오지 않으면 - 글쓰기
+		return getDTO( 
+					(Integer) null, request.getParameter("title"), 
+					request.getParameter("content"), 
+					request.getParameter("writeDate"), 
+					id
+					);
+	}
+}
+

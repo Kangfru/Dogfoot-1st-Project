@@ -1,0 +1,110 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>카페어때</title>
+<style type="text/css">
+td {
+	padding: 5px
+}
+
+.gray {
+	font-size: 10px;
+}
+</style>
+</head>
+<body>
+	<form action="update.do" method="post" enctype="multipart/form-data">
+		<input type="hidden" name="page" value="${param.page }">
+		<input type="hidden" name="perPageNum" value="${param.perPageNum }">
+		<input type="hidden" name="deleteFile1" value="${dto.fileName1 }">
+		<input type="hidden" name="deleteFile2" value="${dto.fileName2 }">
+		<input type="hidden" name="deleteFile3" value="${dto.fileName3 }">
+		<div>
+			<font size="30px"><b><input type="text" id="title"
+					name="title" value="${dto.title }"></b></font>
+		</div>
+		<div>
+			<table class="gray">
+				<tr height="25px">
+					<td width="100px" align="left">Hit</td>
+					<td width="100px" align="left">Comment</td>
+					<td width="350" align="right">${dto.writeDate }</td>
+				</tr>
+			</table>
+		</div>
+		<hr style="margin: 2px; border: solid 1px; width: 550px">
+		<div class="content">
+			<table style="margin-top: 10px;">
+				<tr>
+					<td width="70px">주소</td>
+					<td width="20px" align="center"><b>|</b></td>
+					<td><input type="text" id="addr" name="addr" value="${dto.addr }"></td>
+				</tr>
+				<tr>
+					<td>전화번호</td>
+					<td align="center"><b>|</b></td>
+					<td><input type="text" id="tel" name="tel" value="${dto.tel }"></td>
+				</tr>
+				<tr>
+					<td>주차공간</td>
+					<td align="center"><b>|</b></td>
+					<td><input type="text" id="parking" name="parking" value="${dto.parking }"></td>
+				</tr>
+				<tr>
+					<td>영업시간</td>
+					<td align="center"><b>|</b></td>
+					<td><input type="text" id="open" name="open" value="${dto.open }"></td>
+				</tr>
+				<tr>
+					<td>휴무일</td>
+					<td align="center"><b>|</b></td>
+					<td><input type="text" id="holiday" name="holiday" value="${dto.holiday }"></td>
+				</tr>
+				<tr>
+					<td>메뉴</td>
+					<td align="center"><b>|</b></td>
+				</tr>
+				<tr>
+					<td colspan="3"><textarea id="menu" name="menu" rows="15"
+							cols="90">${dto.menu }</textarea></td>
+				</tr>
+				<tr>
+					<td>해시태그</td>
+					<td align="center"><b>|</b></td>
+				</tr>
+				<tr>
+					<td colspan="3"><textarea id="hTag" name="hTag" rows="5"
+							cols="90" placeholder="여기 수정하기----------"></textarea></td>
+				</tr>
+				
+				<tr>
+					<td>첨부파일</td>
+					<td align="center"><b>|</b></td>
+				</tr>
+				<tr>
+				<tr>
+					<td colspan="2">List Image : <font color="lightGray">${dto.fileName1 }</font></td>
+					<td><input type="file" id="fileName1" name="fileName1"></td>
+				</tr>
+				<tr>
+					<td colspan="2">Top Image : <font color="lightGray">${dto.fileName2 }</font></td>
+					<td><input type="file" id="fileName2" name="fileName2"></td>
+				</tr>
+				<tr>
+					<td colspan="2">Etc Image : <font color="lightGray">${dto.fileName3 }</font></td>
+					<td><input type="file" id="fileName3" name="fileName3"></td>
+				</tr>
+			</table>
+		</div>
+	<div style="width: 550px" align="right">
+	<input type="submit" value="수정">
+	<input type="reset" value="다시입력">
+	<input onclick="history.back()" value="취소">
+	<input type="button" value="목록" onclick="list.do?page=1">
+	</div>
+	</form>
+</body>
+</html>

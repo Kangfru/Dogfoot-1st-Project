@@ -1,0 +1,27 @@
+package com.cafeatte.userCafe.service;
+
+import com.cafeatte.main.Service;
+import com.cafeatte.userCafe.dao.UserCafeDAO;
+import com.cafeatte.util.page.PageObject;
+
+public class UserCafeListService implements Service {
+
+	private UserCafeDAO dao;
+	public UserCafeListService(UserCafeDAO dao) {
+		this.dao = dao;
+	}
+	
+	@Override
+	public Object service(Object[] objs) throws Exception {
+		//Execute클래스에 가보면 (service, object)로 선언되어있음... service가 객체, object가 파라메터...
+		//보드컨에서 넘어온 값 중을 objs 배열로 받는데 그 첫번쨰 값0을 pageObject로 캐스팅해서 pageObject에 넣어준다....
+		PageObject pageObject = (PageObject) objs[0]; 
+		System.out.println("UserCafeListServe.service(): "+pageObject);
+
+		//전체데이터의갯수
+//		pageObject.setTotalRow(dao.);
+		System.out.println("UserCafeListServe.service().pageObject: "+pageObject);
+		return null;
+	}
+	
+}

@@ -1,0 +1,221 @@
+package com.cafeatte.userCafe.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+import com.cafeatte.userCafe.dto.UserCafeDTO;
+import com.cafeatte.util.db.DBUtil;
+import com.cafeatte.util.page.PageObject;
+
+public class UserCafeDAO {
+
+	// insert, update, delete(write,update,delete게시판) -> executeUpdate() : result set 안필요
+	// select(list,view게시판) -> executeQuery() : result set 필요
+		
+	//***************************
+	//*           list          *
+	//***************************
+	public List<UserCafeDTO> list(PageObject pageObject) throws Exception{
+		System.out.println("UserCafeDTO.list()");
+		//가져온데이터가 저장될 곳(이걸로 리턴해야 한다)
+		List<UserCafeDTO> list = null;
+		
+		Connection con = DBUtil.getConnection();
+		String sql = " select u.no, u.title, m.nickName, u.fileName, "
+				+ " to_char(u.writeDate, 'yyyy-mm-dd') writeDate, "
+				+ " u.hit, u.cntLike "
+				+ " from userCafe u, member m "
+				+ " where u.id = m.id ";
+				
+		//pageObject
+		if(pageObject.getWord()!=null && !pageObject.getWord().equals("")) {
+			sql+= " where 1=2 ";
+			if(pageObject.getKey().indexOf("t")>=0)
+				sql+= " or title like ? ";
+			if(pageObject.getKey().indexOf("c")>=0)
+				sql+= " or content like ? ";
+			if(pageObject.getKey().indexOf("n")>=0)
+				sql+= " or nickName like ? ";
+		}
+		sql+= " order by no desc ";
+		//순서번호붙이기
+		sql = " select rownum rnum, no, title, nickName, fileName, writeDate, hit, cntLike from (" +sql+ ")";
+		//페이지에 맞는 데이터 가져오기
+		sql = " select * from (" +sql+ ") where rnum between ? and ? ";
+		System.out.println("userCafeDAO.list().sql:"+sql);
+		
+		//실행각체가져오기
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		int idx = 1;
+		//getword가 not null이면 검색을 했다는 것이고, 그럼 검색키(제목,작성자,내용)에서 제목이 있다면  
+		if(pageObject.getWord()!=null && !pageObject.getWord().equals("")) {
+			if(pageObject.getKey().indexOf("t")>=0)
+				pstmt.setString(idx++, "%"+pageObject.getWord()+"%");
+			if(pageObject.getKey().indexOf("c")>=0)
+				pstmt.setString(idx++, "%"+pageObject.getWord()+"%");
+			if(pageObject.getKey().indexOf("w")>=0)
+				pstmt.setString(idx++, "%"+pageObject.getWord()+"%");
+		}
+		pstmt.setInt(idx++, pageObject.getStartRow());
+		pstmt.setInt(idx++, pageObject.getEndRow());
+		
+		//slect문일땐 executequery
+		ResultSet rs = pstmt.executeQuery();
+		
+		//표시&저장
+		if (rs!=null) {
+			while(rs.next()) {
+				if(list==null) {
+					list = new ArrayList<UserCafeDTO>();
+				}
+				UserCafeDTO dto = new UserCafeDTO();
+				
+				dto.setNo(rs.getInt("no"));
+				dto.setTitle(rs.getString("title"));
+				dto.setNickName(rs.getString("nickName"));
+				dto.setFileName(rs.getString("fileName"));
+				dto.setWriteDate(rs.getString("title"));
+				dto.setHit(rs.getInt("hit"));
+				dto.setCntLike(rs.getString("cntLike"));
+				
+				list.add(dto);
+			}//end while
+		}
+		DBUtil.close(con, pstmt, rs);
+		System.out.println("UserCafeDAO.list().list"+list);
+		return list;		
+	}//end list();
+	
+	
+	//***************************
+	//*     getTotalRow         *
+	//***************************
+//	public void getTotalRow(PageObject pageObject) throws Exception{
+//		
+//		PageObject paObject = new PageObject();
+//		
+//		Connection con = DBUtil.getConnection();
+//		String sql = " select count(*) cnt from userCafe ";
+//		if 
+//		
+//		PreparedStatement pstmt = con.prepareStatement(sql);
+//		
+//	}
+//	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	//***************************
+	//*           view          *
+	//***************************
+	public UserCafeDTO view(int no) throws Exception{
+		System.out.println("UserCafeDAO.view().no:"+no);
+		
+		//담을 객체 선언 및 생성
+		UserCafeDTO dto = new UserCafeDTO();
+		
+		
+		Connection con = DBUtil.getConnection();
+		String sql = " select u.no, u.title, m.nickName, u.fileName, u.content, "
+				+ " to_char(u.writeDate, 'yyyy-mm-dd') writeDate, "
+				+ " u.hit, count(u.cntLike) "
+				+ " from userCafe u, member m "
+				+ " where u.id = m.id "
+				+ " and u.no = ? ";
+		System.out.println("UserCafeDAO.view().sql:"+sql);
+		
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, no);
+		
+		ResultSet rs = pstmt.executeQuery();
+		
+		//rs.next() : 다음행으로 실행위치를 이동한다. 이후 한 레코드(row)를 가리킨다.
+		//(다음행이 있으면 true, 없으면 false를 리턴)
+		if(rs!=null && rs.next()) {
+			//담을 객체 생성			
+			dto.setNo(rs.getInt("no"));
+			dto.setTitle(rs.getString("title"));
+			dto.setNickName(rs.getString("nickName"));
+			dto.setFileName(rs.getString("fileName")); 
+			dto.setContent(rs.getString("content"));
+			dto.setWriteDate(rs.getString("title"));
+			dto.setHit(rs.getInt("hit"));
+			dto.setCntLike(rs.getString("cntLike"));
+				
+		}//end if
+		
+		DBUtil.close(con, pstmt, rs);
+		System.out.println("UserCafeDAO.view().dto:"+dto);
+		return dto;
+		
+	}//end view();
+	
+	//***************************
+	//*       increaseHit       *
+	//***************************
+	//int no는 ListService에서 받아옴
+	public void increaseHit(int no) throws Exception{
+		System.out.println("UserCafeDAO.increaseHit().no:"+no);
+		
+		Connection con = DBUtil.getConnection();
+		
+		String sql = " update userCafe set hit = hit + 1 where no = ? ";
+		
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		System.out.println("UserCafeDAO.increaseHit().sql:"+sql);
+		pstmt.setInt(1, no);
+		
+		int result = pstmt.executeUpdate();
+		if (result>0) System.out.println("조회수 1 증가성공");
+		else {System.out.println("조회수 1 증가 실패");
+			throw new Exception("조회수 1 증가 처리 중 오류");}
+		
+		DBUtil.close(con, pstmt);
+	}//end increaseHit()
+	
+	
+	
+
+	//***************************
+	//*          write          *
+	//***************************
+	//게시글을 쓰면 dto에 담아서 그걸 여기서 ()파라메터로 받아옴...
+	public int write(UserCafeDTO dto) throws Exception {
+		System.out.println("userCafeDAO.write().dto:"+dto);
+		
+		Connection con = DBUtil.getConnection();
+		//글쓰기를 할때 새로 입력되는 것만 들어감 (nickname은 기존데이터 불러오는 거라 안들어감)
+		String sql = " insert into userCafe(no, title, fileName, content) "
+				+ " values(userCafe_seq.nextval,?,?,?)";
+		System.out.println("userCafeDAO.write().sql:"+sql);
+		
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setString(1, dto.getTitle());
+		pstmt.setString(2, dto.getFileName());
+		pstmt.setString(3, dto.getContent());
+		
+		int result = pstmt.executeUpdate(); //executeUpdate는 결과 있으면1 없으면 0인 integer타입, executeUpdate는 resultset 안함.
+		
+		DBUtil.close(con, pstmt);
+		System.out.println("글쓰기 성공");
+		return result;
+	}//write() end
+
+	
+	
+	//***************************
+	//*          update         *
+	//***************************
+}//end UserCafeDAO class;
+
+	

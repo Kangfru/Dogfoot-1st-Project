@@ -1,0 +1,167 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>카페어때</title>
+<style type="text/css">
+td {
+	padding: 5px
+}
+
+.gray {
+	font-size: 10px;
+}
+</style>
+<script type="text/javascript">
+	$(function() {
+		$("#deleteBtn").click(function() {
+			if (!confirm("정말 삭제하시겠습니까?"))
+				return false; //a tag의 href를 취소시킨다->location.href를 변경하는 태그
+		});
+	});
+</script>
+<script type="text/javascript"
+	src="//dapi.kakao.com/v2/maps/sdk.js?appkey=bc47e2d6301babd8ad5806da30e44e7b&libraries=services"></script>
+<script type="text/javascript">
+	$(document)
+			.ready(
+					function() {
+						var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
+						mapOption = {
+							center : new kakao.maps.LatLng(33.450701,
+									126.570667), // 지도의 중심좌표
+							level : 3
+						// 지도의 확대 레벨
+						};
+
+						// 지도를 생성합니다    
+						var map = new kakao.maps.Map(mapContainer, mapOption);
+						var geocoder = new kakao.maps.services.Geocoder();
+						geocoder
+								.addressSearch(
+										"${dto.addr }",
+										function(result, status) {
+											// 정상적으로 검색이 완료됐으면 
+											if (status === kakao.maps.services.Status.OK) {
+
+												var coords = new kakao.maps.LatLng(
+														result[0].y,
+														result[0].x);
+
+												// 결과값으로 받은 위치를 마커로 표시합니다
+												var marker = new kakao.maps.Marker(
+														{
+															map : map,
+															position : coords
+														});
+												// 인포윈도우로 장소에 대한 설명을 표시합니다
+												var infowindow = new kakao.maps.InfoWindow(
+														{
+															content : `<div style="width:150px;text-align:center;padding:6px 0;">${dto.addr }</div>`
+														// "" '' ``
+														});
+												infowindow.open(map, marker);
+
+												// 지도의 중심을 결과값으로 받은 위치로 이동시킵니다
+												map.setCenter(coords);
+											}
+										});
+					});
+</script>
+</head>
+<body>
+	<table width="100%">
+		<tr>
+			<td colspan="2"><img alt="TopImage" src="${dto.fileName2 }"
+				style="width: 100%; height: 150px"></td>
+		</tr>
+		<tr>
+			<%--left//cafe content --%>
+			<td width="50%">
+				<div>
+					<font size="30px"><b>${dto.title }</b></font>
+				</div>
+				<div>
+					<table class="gray">
+						<tr height="25px">
+							<td width="100px" align="left">Hit: ${dto.hit }</td>
+							<td width="100px" align="left">Comment: ${dto.replyCnt }</td>
+							<td width="350px" align="right">${dto.writeDate }</td>
+						</tr>
+					</table>
+				</div>
+				<hr style="margin: 2px; border: solid 1px; width: 550px">
+				<div class="content">
+					<table style="margin-top: 10px;">
+						<tr>
+							<td width="70px">주소</td>
+							<td width="20px" align="center"><b>|</b></td>
+							<td>${dto.addr }</td>
+						</tr>
+						<tr>
+							<td>전화번호</td>
+							<td align="center"><b>|</b></td>
+							<td>${dto.tel }</td>
+						</tr>
+						<tr>
+							<td>주차공간</td>
+							<td align="center"><b>|</b></td>
+							<td>${dto.parking }</td>
+						</tr>
+						<tr>
+							<td>영업시간</td>
+							<td align="center"><b>|</b></td>
+							<td>${dto.open }</td>
+						</tr>
+						<tr>
+							<td>휴무일</td>
+							<td align="center"><b>|</b></td>
+							<td>${dto.holiday }</td>
+						</tr>
+						<tr>
+							<td>메뉴</td>
+							<td align="center"><b>|</b></td>
+						</tr>
+						<tr>
+							<td colspan="3">${dto.menu }</td>
+						</tr>
+						<tr>
+							<td colspan="3"><img alt="" src="${dto.fileName3 }"></td>
+						</tr>
+					</table>
+					<div align="right">
+						<a href="updateForm.do?no=${dto.no }&page=${param.page }&perPageNum=${param.perPageNum}"><button>수정</button></a>
+				<a href="delete.do?no=${dto.no }&perPageNum=${param.perPageNum }&deleteFile1=${dto.fileName1}&deleteFile2=${dto.fileName2}&deleteFile3=${dto.fileName3}"
+				id="deleteBtn"><button>삭제</button></a> <a
+				href="list.do?page=${param.page }&perPageNum=${param.perPageNum }"><button>목록</button></a>
+					</div>
+				</div>
+			</td>
+			<%--right//map and comment --%>
+			<td width="50%" style="padding: 0">
+				<table width="100%">
+					<tr>
+						<td>
+							<div id="map" style="width: 100%; height: 300px; margin: 0"></div>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div id="hTags" style="hteight: 20%">hTag
+								넣기-----------------</div>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div class="commnets" style="height: 30%">댓글 넣기</div>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>마이 페이지</title>
+
+ <style>
+    .left {
+        width: 50%;
+        float: left;
+        box-sizing: border-box;
+    }
+    
+    .right {
+        width: 50%;
+        float: right;
+        box-sizing: border-box;
+    }
+    .mainDiv{
+    	padding: 50px;
+    }
+    tr{
+    	font-size: 30px;
+    }
+    </style>
+</head>
+<body>
+	<div class="mainDiv">
+		<div class="left">
+			<img src="${dto.photo }" width="60%">
+		</div>
+		<div class="right">
+			<table class="table">
+				<tr>
+					<td>아이디</td><td>${dto.id }</td>
+				<tr>
+				<tr>
+					<td>닉네임</td><td>${dto.nickName }</td>
+				<tr>
+				<tr>
+					<td>주소</td><td>${dto.addr }</td>
+				<tr>
+				<tr>
+					<td>전화번호</td><td>${dto.tel }</td>
+				<tr>
+			</table>
+			<a href="updateForm.do"><button class="btn btn-default">개인정보 수정</button></a>
+			<button class="btn btn-default">비밀번호 수정</button>
+			<button class="btn btn-default">탈퇴하기</button>
+		</div>
+	</div>
+</body>
+</html>

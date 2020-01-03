@@ -1,0 +1,399 @@
+package com.cafeatte.cafe.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.cafeatte.cafe.dto.CafeDTO;
+import com.cafeatte.reply.dto.ReplyDTO;
+import com.cafeatte.util.db.DBUtil;
+import com.cafeatte.util.page.PageObject;
+import com.cafeatte.util.page.SearchCondition;
+
+public class CafeDAO {
+
+	// 1.Cafe list
+	public List<CafeDTO> list(PageObject pageObject) throws Exception {
+		System.out.println("CafeDTO.list()");
+		List<CafeDTO> list = null;
+
+		Connection con = DBUtil.getConnection();
+
+		String sql = " select no, title, to_char(writeDate, 'yyyy-mm-dd') writeDate, "
+				+ " hit, replycnt, fileName1 from cafe ";
+		sql += SearchCondition.getSearchSQLWithWhere(pageObject);
+		sql += " order by no desc ";
+		sql = " select rownum rnum, no, title, writeDate, hit, replycnt, fileName1 from( " + sql + " )";
+		sql = " select *from( " + sql + " ) where rnum between ? and ? ";
+
+		System.out.println("CafeDAO.list().sql : " + sql);
+
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		int idx = 1;
+		idx = SearchCondition.setPreparedStatement(pstmt, pageObject, idx);
+		pstmt.setInt(idx++, pageObject.getStartRow());
+		pstmt.setInt(idx++, pageObject.getEndRow());
+
+		ResultSet rs = pstmt.executeQuery();
+
+		if (rs != null) {
+			while (rs.next()) {
+				if (list == null) {
+					list = new ArrayList<CafeDTO>();
+				} // end if
+				CafeDTO dto = new CafeDTO();
+				dto.setNo(rs.getInt("no"));
+				dto.setTitle(rs.getString("title"));
+				dto.setWriteDate(rs.getString("writeDate"));
+				dto.setHit(rs.getInt("hit"));
+				dto.setReplyCnt(rs.getInt("replycnt"));
+				dto.setFileName1(rs.getString("fileName1"));
+				list.add(dto);
+			} // while end
+		} // if end
+		DBUtil.close(con, pstmt, rs);
+
+		System.out.println("CafeDAO.list().list : " + list);
+		return list;
+	}// list end
+
+	// 2. Cafe Write
+	public Integer write(CafeDTO dto) throws Exception {
+		System.out.println("CafeDAO.write().dto : " + dto);
+
+		Connection con = DBUtil.getConnection();
+		String sql = " insert into cafe ( no, id, title, addr, tel, parking, open, holiday, menu, fileName1, fileName2, fileName3 ) "
+				+ " values ( cafe_seq.nextval, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
+		System.out.println("CafeDAO.write().sql : " + sql);
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setString(1, dto.getId());
+		pstmt.setString(2, dto.getTitle());
+		pstmt.setString(3, dto.getAddr());
+		pstmt.setString(4, dto.getTel());
+		pstmt.setString(5, dto.getParking());
+		pstmt.setString(6, dto.getOpen());
+		pstmt.setString(7, dto.getHoliday());
+		pstmt.setString(8, dto.getMenu());
+		pstmt.setString(9, dto.getFileName1());
+		pstmt.setString(10, dto.getFileName2());
+		pstmt.setString(11, dto.getFileName3());
+
+		int result = pstmt.executeUpdate();
+		if (result > 0) {
+			System.out.println("CafeDAO.write() : 글 작성 성공");
+		} else {
+			System.out.println("CafeDAO.write() : 글 작성 실패");
+		} // else end
+		DBUtil.close(con, pstmt);
+
+		return result;
+	}// write end
+
+	// 3. Cafe view
+	public CafeDTO view(int no) throws Exception {
+		System.out.println("Cafe.DAO.view().no : " + no);
+
+		CafeDTO dto = null;
+
+		Connection con = DBUtil.getConnection();
+
+		String sql = " select no, id, title, addr, tel, parking, open, holiday, menu, "
+				+ " to_char(writeDate, 'yyyy-mm-dd') writeDate, "
+				+ " hit, replycnt, fileName1, fileName2, fileName3 from cafe where no = ? ";
+
+		System.out.println("CafeDAO.view().sql : " + sql);
+
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, no);
+
+		ResultSet rs = pstmt.executeQuery();
+		if (rs != null && rs.next()) {
+			dto = new CafeDTO();
+			dto.setNo(rs.getInt("no"));
+			dto.setId(rs.getString("id"));
+			dto.setTitle(rs.getString("title"));
+			dto.setAddr(rs.getString("addr"));
+			dto.setTel(rs.getString("tel"));
+			dto.setParking(rs.getString("parking"));
+			dto.setOpen(rs.getString("open"));
+			dto.setHoliday(rs.getString("holiday"));
+			dto.setMenu(rs.getString("menu"));
+			dto.setWriteDate(rs.getString("writeDate"));
+			dto.setHit(rs.getInt("hit"));
+			dto.setReplyCnt(rs.getInt("replycnt"));
+			dto.setFileName1(rs.getString("fileName1"));
+			dto.setFileName2(rs.getString("fileName2"));
+			dto.setFileName3(rs.getString("fileName3"));
+		} // if end
+		DBUtil.close(con, pstmt, rs);
+
+		System.out.println("CafeDTO.view().dto : " + dto);
+
+		return dto;
+	}// view end
+
+	// 4. Cafe Update
+	public Integer update(CafeDTO dto, String id) throws Exception {
+		System.out.println("CafeDAO.update().dto : " + dto);
+		System.out.println("CafeDAO.update().id : " + id);
+
+		Connection con = DBUtil.getConnection();
+
+		String sql = " update cafe set title = ?, addr = ?, tel = ?, "
+				+ " parking = ?, open = ?, holiday = ?, menu = ?, " + " fileName1 = ?, fileName2 = ?, fileName3 = ? "
+				+ " where no = ? and id = ?";
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setString(1, dto.getTitle());
+		pstmt.setString(2, dto.getAddr());
+		pstmt.setString(3, dto.getTel());
+		pstmt.setString(4, dto.getParking());
+		pstmt.setString(5, dto.getOpen());
+		pstmt.setString(6, dto.getHoliday());
+		pstmt.setString(7, dto.getMenu());
+		pstmt.setString(8, dto.getFileName1());
+		pstmt.setString(9, dto.getFileName2());
+		pstmt.setString(10, dto.getFileName3());
+		pstmt.setInt(11, dto.getNo());
+		pstmt.setString(12, id);
+
+		int result = pstmt.executeUpdate();
+		if (result > 0) {
+			System.out.println("CafeDAO.update() : 글 수정 성공");
+		} else {
+			System.out.println("CafeDAO.update() : 글 수정 실패");
+		} // else end
+		DBUtil.close(con, pstmt);
+
+		return result;
+
+	}// update end
+
+	// 5. Cafe Delete
+	public Integer delete(int no, String id) throws Exception {
+
+		System.out.println("CafeDTO.delete().no : " + no);
+		System.out.println("CafeDTO.delete().id : " + id);
+
+		Connection con = DBUtil.getConnection();
+
+		String sql = " delete from cafe where no = ? and id = ? ";
+		System.out.println("CafeDTO.delete().sql : " + sql);
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, no);
+		pstmt.setString(2, id);
+		int result = pstmt.executeUpdate();
+		if (result > 0) {
+			System.out.println("CafeDAO.delete() : 글 삭제 성공");
+		} else {
+			System.out.println("CafeDAO.delete() : 글 삭제 실패");
+		} // else end
+		DBUtil.close(con, pstmt);
+		return result;
+	}// delete end
+
+	// 6. Cafe toTal List
+	public int getTotalRow(PageObject pageObject) throws Exception {
+
+		System.out.println("CafeDAO.getTotalRow():");
+
+		int totalRow = 0;
+
+		Connection con = DBUtil.getConnection();
+		String sql = " select count(*) cnt from cafe ";
+		sql += SearchCondition.getSearchSQLWithWhere(pageObject);
+
+		System.out.println("CafeDAO.getTotalRow().sql:" + sql);
+		PreparedStatement pstmt = con.prepareStatement(sql);
+
+		int idx = 1;
+		SearchCondition.setPreparedStatement(pstmt, pageObject, idx);
+		ResultSet rs = pstmt.executeQuery();
+
+		if (rs != null && rs.next()) {
+			totalRow = rs.getInt("cnt");
+		} // if end
+
+		DBUtil.close(con, pstmt, rs);
+
+		System.out.println("CafeDAO.getTotalRow().totalRow:" + totalRow);
+
+		return totalRow;
+	} // getTotalRow end
+
+	// 7. 조회수 증가
+	public void increaseHit(int no) throws Exception {
+		System.out.println("CafeDAO.increaseHit().no : " + no);
+
+		Connection con = DBUtil.getConnection();
+		String sql = " update cafe set hit = hit + 1 where no = ? ";
+
+		System.out.println("CafeDAO.increaseHit().sql : " + sql);
+
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, no);
+		int result = pstmt.executeUpdate();
+		if (result > 0) {
+			System.out.println("CafeDAO.increaseHit() : 조회수 1 증가 성공");
+		} else {
+			System.out.println("CafeDAO.increaseHit() : 조회수 1 증가 실패");
+		} // else end
+		DBUtil.close(con, pstmt);
+	}// increaseHit end
+
+	// 1.Reply list
+	public List<ReplyDTO> replyList(int no) throws Exception {
+		System.out.println("ReplyDTO.replyList()");
+		List<ReplyDTO> list = null;
+
+		Connection con = DBUtil.getConnection();
+
+		String sql = " select replyNo, id, content, to_char(writeDate, 'yyyy-mm-dd') writeDate, "
+				+ " refNo, ordNo, levNo, parentNo, no from reply where no = ? order by replyNo desc ";
+
+		System.out.println("ReplyDAO.list().sql : " + sql);
+
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, no);
+
+		ResultSet rs = pstmt.executeQuery();
+
+		if (rs != null) {
+			while (rs.next()) {
+				if (list == null) {
+					list = new ArrayList<ReplyDTO>();
+				} // end if
+				ReplyDTO dto = new ReplyDTO();
+				dto.setReplyNo(rs.getInt("replyNo"));
+				dto.setId(rs.getString("id"));
+				dto.setContent(rs.getString("content"));
+				dto.setWriteDate(rs.getString("writeDate"));
+				dto.setRefNo(rs.getInt("refNo"));
+				dto.setOrdNo(rs.getInt("ordNo"));
+				dto.setLevNo(rs.getInt("levNo"));
+				dto.setParentNo(rs.getInt("parentNo"));
+				list.add(dto);
+			} // while end
+		} // if end
+		DBUtil.close(con, pstmt, rs);
+
+		System.out.println("ReplyDAO.list().list : " + list);
+		return list;
+	}// replyList end
+
+	// 2. Reply replyWrite
+	public Integer replyWrite(ReplyDTO dto) throws Exception {
+		System.out.println("ReplyDAO.replyWrite().dto : " + dto);
+
+		Connection con = DBUtil.getConnection();
+		String sql = " insert into reply ( replyNo, id, content, refNo, ordNo, levNo, no ) "
+				+ " values ( reply_seq.nextval, ?, ?, reply_seq.nextval, 1, 0, ? )";
+		System.out.println("ReplyDAO.write().sql : " + sql);
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setString(1, dto.getId());
+		pstmt.setString(2, dto.getContent());
+		pstmt.setInt(3, dto.getNo());
+
+		int result = pstmt.executeUpdate();
+		if (result > 0) {
+			System.out.println("ReplyDAO.replyWrite() : 댓글 작성 성공");
+		} else {
+			System.out.println("ReplyDAO.replyWrite() : 댓글 작성 실패");
+		} // else end
+		DBUtil.close(con, pstmt);
+
+		return result;
+	}// replyWrite end
+
+	// 3. replyUpdate Update
+	public Integer replyUpdate(int replyNo, String content) throws Exception {
+		System.out.println("ReplyDAO.replyUpdate().replyNo : " + replyNo + " content : " + content);
+
+		Connection con = DBUtil.getConnection();
+
+		String sql = " update reply set content = ? where replyNo = ? ";
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setString(1, content);
+		pstmt.setInt(2, replyNo);
+
+		int result = pstmt.executeUpdate();
+		if (result > 0) {
+			System.out.println("ReplyDAO.replyUpdate() : 댓글 수정 성공");
+		} else {
+			System.out.println("ReplyDAO.replyUpdate() : 댓글 수정 실패");
+		} // else end
+		DBUtil.close(con, pstmt);
+
+		return result;
+
+	}// replyUpdate end
+
+	// 4. Reply replyDelete
+	public Integer replyDelete(int replyNo) throws Exception {
+
+		System.out.println("ReplyDTO.replyDelete().no : " + replyNo);
+
+		Connection con = DBUtil.getConnection();
+
+		String sql = " delete from reply whre replyNo = ? ";
+		System.out.println("ReplyDTO.delete().sql : " + sql);
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, replyNo);
+		int result = pstmt.executeUpdate();
+		if (result > 0) {
+			System.out.println("ReplyDAO.replyDelete() : 댓글 삭제 성공");
+		} else {
+			System.out.println("ReplyDAO.replyDelete() : 댓글 삭제 실패");
+		} // else end
+		DBUtil.close(con, pstmt);
+		return result;
+	}// replyDelete end
+
+	// 5. Reply increaseOrdNo
+	public void increaseOrdNo(ReplyDTO dto) throws Exception {
+		System.out.println("ReplyDAO.increaseOrdNo().dto:" + dto);
+
+		Connection con = DBUtil.getConnection();
+
+		String sql = " update reply set ordNo = ordNo + 1 where refNo = ? and ordNo >= ? ";
+		System.out.println("ReplyDAO.increaseOrdNo().sql:" + sql);
+
+		PreparedStatement pstmt = con.prepareStatement(sql);
+
+		pstmt.setInt(1, dto.getRefNo());
+		pstmt.setInt(2, dto.getOrdNo());
+
+		int result = pstmt.executeUpdate();
+
+		if (result > 0) {
+			System.out.println("ReplyDAO.increaseOrdNo() : 순서번호 증가 성공");
+		} else {
+			System.out.println("ReplyDAO.increaseOrdNo() : 순서번호 증가 실패");
+		} // else end
+
+		DBUtil.close(con, pstmt);
+	} // increaseOrdNo end
+
+	// 6. Reply SetNullZero(혹시라도 순서번호, 들여쓰기, 부모글번호, 관련글번호가 들어가지 않은 경우를 해결)
+	public void SetNullZero(int replyNo) throws Exception {
+		System.out.println("ReplyDAO.SetNullZero().replyNo : " + replyNo);
+		Connection con = DBUtil.getConnection();
+
+		String sql = " update reply set refNo = ?, ordNo = 1, levNo = 0 where replyNo = ? and refNo = 0 or refNo is NULL ";
+		System.out.println("ReplyDAO.SetNullZero().sql : " + sql);
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, replyNo);
+		pstmt.setInt(2, replyNo);
+
+		int result = pstmt.executeUpdate();
+
+		if (result > 0) {
+			System.out.println("ReplyDAO.SetNullZero() : Null값 초기화 성공");
+		} else {
+			System.out.println("ReplyDAO.SetNullZero() : Null값 초기화 실패");
+		} // else end
+
+		DBUtil.close(con, pstmt);
+	}// SetNullZero end
+}

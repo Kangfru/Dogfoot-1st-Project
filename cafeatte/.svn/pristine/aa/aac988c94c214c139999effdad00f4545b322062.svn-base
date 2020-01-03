@@ -1,0 +1,58 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>로그인</title>
+</head>
+
+<body>
+	<div class="container">
+		<h2>로그인</h2>
+		<div id="mainCheck">
+		<form action="login.do" method="post" id="loginForm">
+			<div class="form-group">
+				<label for="ID">ID : </label> <input type="text"
+					class="form-control" id="id" placeholder="Enter ID" maxlength="20"
+					required="required" pattern="^[A-Za-z][A-za-z0-9]{3,19}$"
+					title="4-20영숫자, 맨 앞자는 영문자" name="id" />
+			</div>
+			<div id="idCheck"></div>
+			<div class="form-group">
+				<label for="pw">비밀번호 : </label> <input type="password"
+					class="form-control" id="pw" placeholder="Enter password"
+					maxlength="20" required="required" pattern="^.{4,20}$"
+					title="4-20이내의 글자 입력" name="pw" />
+			</div>
+			<button type="submit" class="btn btn-default" id="loginBtn">Login</button>
+			<div id="pwCheck"></div>
+		</form>
+		</div>
+		<hr/>
+		<h3>아직 카페어때의 멤버가 아니세요? 가입을 통해 다양한 혜택과 정보를 누려보세요!</h3>
+		<a href="joinForm.do"><button class="btn btn-default">Sign in</button></a>
+	</div>
+	
+	<script type="text/javascript">
+// 		$("#loginForm").on("submit", function(event) {
+// 			var id = $("#id").val().trim();
+// 			var pw = $("#pw").val().trim();
+// 			$("#id").val(id);
+// 			$("#pw").val(id);
+// 			if(id.length == 0 && id.length < 4){
+// 				$("#idCheck").html("아이디를 확인해주세요.");
+// 				return false;
+// 			}
+// 			if(pw.length == 0 && pw.length < 4){
+// 				$("#pwCheck").html("비밀번호를 확인해주세요.");
+// 				return false;
+// 			}
+// 			$("#mainCheck").load("/ajax/login.do");
+// 			if(!($("#mainCheck").text().indexOf("확인") <= -1)){
+// 				$("#loginForm").submit();
+// 			}
+// 		});
+	</script>
+</body>
+</html>

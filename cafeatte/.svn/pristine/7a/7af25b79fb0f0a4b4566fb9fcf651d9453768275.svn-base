@@ -1,0 +1,30 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+	
+<%
+%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>비밀번호 확인</title>
+</head>
+<body>
+	<div class="container">
+		<h2>보안을 위해 비밀번호를 한 번 더 입력해주시기 바랍니다.</h2>
+		<form action="checkPw.do" method="post">
+<%-- 			<input type="hidden" value="<%=nextPath %>"/> --%>
+			<div class="form-group">
+				<label for="pw">비밀번호 : </label> <input type="password"
+					class="form-control" id="pw" placeholder="Enter password"
+					maxlength="20" required="required" pattern="^.{4,20}$"
+					title="4-20이내의 글자 입력" name="pw" />
+			</div>
+			<button type="submit" class="btn btn-default">Confirm</button>
+		</form>
+		<hr/>
+		<a href="#" onclick="histry.back(); return false;"><button class="btn btn-default">Cancel</button></a>
+	</div>
+</body>
+
+</html>

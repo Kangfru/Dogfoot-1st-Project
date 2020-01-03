@@ -1,0 +1,62 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="tl" tagdir="/WEB-INF/tags"%>
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<title>UserCafe List</title>
+<script type="text/javascript">
+
+	$(function() {
+		$(".datarow").click(function(){
+			var no = $(this).find(".no").text();
+			location = "view.do?no="+no
+					+"&cnt=1"
+					+"&page=${pageObject.page}"
+					+"&perPageNum=${pageObject.perPageNum}";
+					${(!empty pageObject.word)?
+							"+\"&key="+=pageObject.key+="&word="
+							+=pageObject.word+="\"":""}
+		});
+		
+	});
+</script>
+</head>
+<body>
+
+	<table>
+		<tr>
+			<td>글번호</td>
+			<td>제목</td>
+			<td>닉네임</td>
+			<td>이미지</td>
+			<td>작성일</td>
+			<td>조회수</td>
+			<td>좋아요</td>
+
+		</tr>
+		<c:forEach items="${list }" var="dto">
+			<tr class="datarow">
+			<td>${dto.no}</td>
+			<td>${dto.title}</td>
+			<td>${dto.nickName}</td>
+			<td>${dto.fileName}</td>
+			<td>${dto.writeDate}</td>
+			<td>${dto.hit}</td>
+			<td>${dto.cntLike}</td>
+			</tr>
+		</c:forEach>
+		
+		<tr>
+			<td><a href="writeForm.do"><button>글쓰기</button></a></td>
+			<td><a href="list.do"><button>전체목록</button></a></td>
+			
+		</tr>
+	</table>
+
+
+</body>
+</html>

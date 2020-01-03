@@ -1,0 +1,31 @@
+package com.cafeatte.member.controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.cafeatte.main.Controller;
+import com.cafeatte.main.Service;
+
+public class MemberController implements Controller {
+
+	private Service changePwService, findIdService, findPwService, 
+	joinService, listService, loginService, signOutService;
+	
+	public MemberController(Service changePwService, Service findIdService, Service findPwService, Service joinService, 
+			Service listService, Service loginService, Service signOutService) {
+		this.changePwService = changePwService;
+		this.findIdService = findIdService;
+		this.findPwService = findPwService;
+		this.joinService = joinService;
+		this.listService = listService;
+		this.loginService = loginService;
+		this.signOutService = signOutService;
+	}
+	
+	@Override
+	public String execute(HttpServletRequest request, HttpServletResponse response, String uri) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

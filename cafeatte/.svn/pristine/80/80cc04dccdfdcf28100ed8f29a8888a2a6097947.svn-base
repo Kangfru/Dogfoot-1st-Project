@@ -1,0 +1,5 @@
+package com.cafeatte.cafe.dao;
+
+public class CafeDAO {
+
+}

@@ -1,0 +1,21 @@
+package com.cafeatte.userCafe.service;
+
+import com.cafeatte.main.Service;
+import com.cafeatte.userCafe.dao.UserCafeDAO;
+
+public class UserCafeViewService implements Service {
+
+	private final UserCafeDAO dao;
+	public UserCafeViewService(UserCafeDAO dao) {
+		this.dao = dao;
+	}
+	@Override
+	public Object service(Object[] objs) throws Exception {
+		int no = (int) objs[0];
+		int cnt = (int) objs[1];
+		System.out.println("UserCafeViewService.service()");
+		if (cnt ==1) dao.increaseHit(no); 
+		return dao.view(no) ;
+	}
+	
+}

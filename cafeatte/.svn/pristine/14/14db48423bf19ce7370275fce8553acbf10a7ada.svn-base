@@ -1,0 +1,298 @@
+package com.cafeatte.member.dao;
+
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.cafeatte.member.dto.MemberDTO;
+import com.cafeatte.util.db.DBUtil;
+import com.cafeatte.util.page.PageObject;
+import com.cafeatte.util.page.SearchCondition;
+
+public class MemberDAO {
+
+	public MemberDTO login(MemberDTO dto) throws Exception {
+		System.out.println("MemberDAO.login()");
+		
+		String sql = "";
+		
+		MemberDTO outDTO = new MemberDTO();
+		
+		Connection con = DBUtil.getConnection();
+		
+		sql = " SELECT m.id, m.nickName, m.grade, g.gradeName, m.state, s.stateName FROM member m, grade g, state s "
+				+ " WHERE (m.id = ? and m.pw = ?) and (m.grade = g.grade) and (m.state = s.state ) ";
+		
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		
+		pstmt.setString(1, dto.getId());
+		pstmt.setString(2, dto.getPw());
+		
+		ResultSet rs = pstmt.executeQuery();
+		
+		if(rs!=null) {
+			outDTO.setId(rs.getString("id"));
+			outDTO.setNickName(rs.getString("nickName"));
+			outDTO.setGrade(rs.getInt("grade"));
+			outDTO.setId(rs.getString("id"));
+			outDTO.setId(rs.getString("id"));
+		}
+		DBUtil.close(con, pstmt, rs);
+		return outDTO;
+	}
+	
+	public Integer changePw(MemberDTO dto) throws Exception{
+		System.out.println("MemberDAO.changePw()");
+		
+		Connection con = DBUtil.getConnection();
+
+		String sql = " UPDATE member SET pw = ? ";
+		System.out.println("MemberDAO.update().sql:" + sql);
+
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		
+		pstmt.setString(1, dto.getPw());
+
+		int result = pstmt.executeUpdate();
+
+		DBUtil.close(con, pstmt);
+
+		
+		return result;
+	}
+	
+	public String findId(String email) throws Exception{
+		System.out.println("MemberDAO.findId().email : " + email);
+		String id = "";
+		Connection con = DBUtil.getConnection();
+
+		String sql = " SELECT id FROM member WHERE email = ? ";
+		System.out.println("MemberDTO.list().sql:" + sql);
+
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		
+		pstmt.setString(1, email);
+		
+		ResultSet rs = pstmt.executeQuery();
+		if(rs == null) {
+			id = "";
+		} else {
+			id = rs.getString("id");
+		}
+		
+		return id;
+	}
+	
+	public String findPw(String id) throws Exception{
+		System.out.println("MemberDAO.findId().email : " + id);
+		String pw = "";
+		Connection con = DBUtil.getConnection();
+
+		String sql = " SELECT pw FROM member WHERE id = ? ";
+		System.out.println("MemberDTO.list().sql:" + sql);
+
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		
+		pstmt.setString(1, id);
+		
+		ResultSet rs = pstmt.executeQuery();
+		if(rs == null) {
+			pw = "";
+		} else {
+			pw = rs.getString("id");
+		}
+		
+		return pw;
+	}
+	
+	public int join(MemberDTO dto) throws Exception{
+		Connection con = DBUtil.getConnection();
+		System.out.println("MemberDAO.join().dto : " + dto);
+		String sql = " INSERT INTO member(id, pw, addr, tel, email, question, answer, photo, nickname) " + 
+				" VALUES (?, ? , ?, ?, ?, ?, ?, ?, ?) ";
+	
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setString(1, dto.getId());
+		pstmt.setString(2, dto.getPw());
+		pstmt.setString(3, dto.getAddr());
+		pstmt.setString(4, dto.getTel());
+		pstmt.setString(5, dto.getEmail());
+		pstmt.setString(6, dto.getQuestion());
+		pstmt.setString(7, dto.getAnswer());
+		pstmt.setString(8, dto.getPhoto());
+		pstmt.setString(9, dto.getNickName());
+		
+		int result = pstmt.executeUpdate();
+		if (result > 0) {
+			System.out.println("회원 등록에 성공했습니다.");
+
+		}
+		DBUtil.close(con, pstmt);
+
+		return result;
+		
+		
+	}
+	
+	public void  signOut(String id) throws Exception {
+
+		System.out.println("MemberDAO.withdrawal().id:" + id);
+
+		Connection con = DBUtil.getConnection();
+
+		String sql = " delete from member where id = ? ";
+		System.out.println("MemberDAO.delete().sql:" + sql);
+
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setString(1, id);
+
+		int result = pstmt.executeUpdate();
+
+		if (result > 0)
+			System.out.println("삭제 성공");
+		else
+			System.out.println("삭제가 되지 않았습니다. -id를 확인하세요.");
+
+		DBUtil.close(con, pstmt);
+
+	} // end of signOut()
+	
+	public int update(MemberDTO dto) throws Exception {
+		// 회원 정보 수정
+		System.out.println("MemberDAO.update().dto:" + dto);
+
+		Connection con = DBUtil.getConnection();
+
+		String sql = " UPDATE member SET nickName = ?, addr = ?, tel = ?, email = ?, photo = ? WHERE id = ? ";
+		System.out.println("MemberDAO.update().sql:" + sql);
+
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setString(1, dto.getNickName());
+		pstmt.setString(2, dto.getAddr());
+		pstmt.setString(3, dto.getTel());
+		pstmt.setString(4, dto.getEmail());
+		pstmt.setString(5, dto.getPhoto());
+		pstmt.setString(6, dto.getId());
+
+		int result = pstmt.executeUpdate();
+
+		DBUtil.close(con, pstmt);
+		
+		return result;
+
+	} // end of update
+	
+	public List<MemberDTO> list(PageObject pageObject) throws Exception {
+
+		System.out.println("MemberDAO.list()");
+
+		List<MemberDTO> list = null;
+
+		Connection con = DBUtil.getConnection();
+
+		String sql = " SELECT m.id, m.nickName, m.addr, m.email, m.photo, g.gradeName, s.stateName FROM member m, grade g, state s "
+		+ " WHERE (m.grade = g.grade) and (m.state = s.state ) ";
+		sql += SearchCondition.getSearchSQLWithWhereMember(pageObject);
+		sql += " ORDER BY id DESC ";
+		sql = " SELECT ROWNUM runm, id, nickName, addr, email, photo, gradeName, stateName FROM ( " + sql + " ) ";
+		sql = " SELECT rnum. id, nickName, addr, email, photo, gradeName, stateName FROM ( " + sql + " ) WHERE rnum BETWEEN ? and ? ";
+		System.out.println("MemberDTO.list().sql:" + sql);
+		int idx=1;
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		idx = SearchCondition.setPreparedStatementMember(pstmt, pageObject, idx);
+		pstmt.setInt(idx++, pageObject.getStartRow());
+		pstmt.setInt(idx++, pageObject.getEndRow());
+		ResultSet rs = pstmt.executeQuery();
+
+		if (rs != null) {
+			while (rs.next()) {
+				if (list == null)
+					list = new ArrayList<MemberDTO>();
+
+				MemberDTO dto = new MemberDTO();
+
+				dto.setId(rs.getString("id"));
+				dto.setNickName(rs.getString("nickName"));
+				dto.setAddr(rs.getString("addr"));
+				dto.setEmail(rs.getString("email"));
+				dto.setPhoto(rs.getString("photo"));
+				String smallPhoto = dto.getPhoto();
+				int pos = smallPhoto.lastIndexOf("/");
+				smallPhoto = smallPhoto.substring(0, pos + 1) + "s_" + smallPhoto.substring(pos + 1);
+				dto.setPhoto(rs.getString("photo"));
+				dto.setGradeName(rs.getString("gradeName"));
+				dto.setStateName(rs.getString("stateName"));
+				list.add(dto);
+
+			}
+		}
+		DBUtil.close(con, pstmt, rs);
+		System.out.println("MemberDAO.list().list:" + list);
+		return list;
+
+	} // end of list
+	
+	public int gradeChange(String id, int grade) throws Exception {
+		
+		System.out.println("MemberDAO.gradeChange().id : " + id);
+		
+		Connection con = DBUtil.getConnection();
+
+		String sql = " UPDATE member SET grade = ? WHERE id = ? ";
+		System.out.println("MemberDAO.update().sql:" + sql);
+
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, grade);
+		pstmt.setString(2, id);
+		
+
+		int result = pstmt.executeUpdate();
+
+		DBUtil.close(con, pstmt);
+		
+		return result;
+	}
+	
+	public int stateChange(String id, int state) throws Exception {
+		
+		System.out.println("MemberDAO.gradeChange().id : " + id);
+		
+		Connection con = DBUtil.getConnection();
+		
+		String sql = " UPDATE member SET state = ? WHERE id = ? ";
+		System.out.println("MemberDAO.update().sql:" + sql);
+		
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, state);
+		pstmt.setString(2, id);
+		
+		
+		int result = pstmt.executeUpdate();
+		
+		DBUtil.close(con, pstmt);
+		
+		return result;
+	}
+
+public String idCheck(String id) throws Exception {
+		
+		Connection con = DBUtil.getConnection();
+		
+		String sql = " SELECT id FROM member WHERE id = ? ";
+		
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		
+		pstmt.setString(1, id);
+		String idCheckResult = null;
+		ResultSet rs = pstmt.executeQuery();
+		if(rs!=null && rs.next()) {
+			idCheckResult = rs.getString("id");
+		}
+		DBUtil.close(con, pstmt, rs);
+		return idCheckResult;
+	}
+	
+}

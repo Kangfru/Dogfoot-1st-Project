@@ -1,0 +1,73 @@
+package com.cafeatte.reply.dto;
+
+public class ReplyDTO {
+	private int replyNo;
+	private String id;
+	private String title;
+	private String content;
+	private String writeDate;
+	private String refNo;
+	private String ordNo;
+	private String parentNo;
+	private String no;
+	public int getReplyNo() {
+		return replyNo;
+	}
+	public void setReplyNo(int replyNo) {
+		this.replyNo = replyNo;
+	}
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+	public String getTitle() {
+		return title;
+	}
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	public String getContent() {
+		return content;
+	}
+	public void setContent(String content) {
+		this.content = content;
+	}
+	public String getWriteDate() {
+		return writeDate;
+	}
+	public void setWriteDate(String writeDate) {
+		this.writeDate = writeDate;
+	}
+	public String getRefNo() {
+		return refNo;
+	}
+	public void setRefNo(String refNo) {
+		this.refNo = refNo;
+	}
+	public String getOrdNo() {
+		return ordNo;
+	}
+	public void setOrdNo(String ordNo) {
+		this.ordNo = ordNo;
+	}
+	public String getParentNo() {
+		return parentNo;
+	}
+	public void setParentNo(String parentNo) {
+		this.parentNo = parentNo;
+	}
+	public String getNo() {
+		return no;
+	}
+	public void setNo(String no) {
+		this.no = no;
+	}
+	@Override
+	public String toString() {
+		return "ReplyDTO [replyNo=" + replyNo + ", id=" + id + ", title=" + title + ", content=" + content
+				+ ", writeDate=" + writeDate + ", refNo=" + refNo + ", ordNo=" + ordNo + ", parentNo=" + parentNo
+				+ ", no=" + no + "]";
+	}
+}

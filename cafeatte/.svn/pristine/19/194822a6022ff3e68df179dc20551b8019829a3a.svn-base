@@ -1,0 +1,101 @@
+package com.cafeatte.coupon.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.cafeatte.coupon.dto.CouponDTO;
+import com.cafeatte.util.db.DBUtil;
+
+public class CouponDAO {
+
+	public void send(CouponDTO dto) throws Exception{
+		Connection con = DBUtil.getConnection();
+		
+		String sql = " INSERT INTO coupon (cno, id, title, content, fileName, cafe_no) "
+				+ " VALUES(coupon_seq.nextval, ?, ?, ?, ?, ? ) ";
+		
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		
+		pstmt.setString(1, dto.getSender());
+		pstmt.setString(2, dto.getTitle());
+		pstmt.setString(3, dto.getContent());
+		pstmt.setString(4, dto.getFileName());
+		pstmt.setInt(5, dto.getCafe_no());
+		
+		pstmt.executeUpdate();
+		
+		DBUtil.close(con, pstmt);
+	}
+	
+	public List<CouponDTO> list(CouponDTO dto) throws Exception {
+		List<CouponDTO> list = null;
+		List<CouponDTO> usedList = usedList(dto);
+		CouponDTO[] usedDto = usedList.toArray(new CouponDTO[usedList.size()]);
+		Connection con = DBUtil.getConnection();
+		
+		String sql = " SELECT cno, id, title, content, cafe_no, fileName, TO_CHAR(endDate, 'yyyy-mm-dd') endDate FROM coupon ";
+		
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		
+		ResultSet rs = pstmt.executeQuery();
+		
+		if(rs!=null) {
+			while(rs.next()) {
+				if(list == null) {
+					list = new ArrayList<CouponDTO>();
+				}
+				CouponDTO nUseDto = new CouponDTO();
+				nUseDto.setCno(rs.getInt("cno"));
+				nUseDto.setSender(rs.getString("id"));
+				nUseDto.setTitle(rs.getString("title"));
+				nUseDto.setContent(rs.getString("content"));
+				nUseDto.setCafe_no(rs.getInt("cafe_no"));
+				nUseDto.setFileName(rs.getString("fileName"));
+				nUseDto.setEndDate(rs.getString("endDate"));
+				list.add(nUseDto);
+				
+				for(int i = 0; i < usedList.size(); i++) {
+					if(nUseDto.getCno() == usedDto[i].getCno()) {
+						list.remove(nUseDto);
+					}
+					
+				}
+			}
+		}
+		
+		return list;
+	}
+	
+	public List<CouponDTO> usedList(CouponDTO dto) throws Exception {
+		List<CouponDTO> list = null;
+		
+		Connection con = DBUtil.getConnection();
+		
+		String sql = " SELECT * FROM couponUsed WHERE ID = ? ";
+		
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		
+		pstmt.setString(1, dto.getUsedId());
+		
+		ResultSet rs = pstmt.executeQuery();
+		
+		if(rs!=null) {
+			while(rs.next()) {
+				if(list == null)
+					list = new ArrayList<CouponDTO>();
+				CouponDTO usedDto = new CouponDTO();
+				usedDto.setCno(rs.getInt("cno"));
+				usedDto.setNo(rs.getInt("no"));
+				usedDto.setUsedId(rs.getString("id"));
+				
+				list.add(usedDto);
+			}
+		}
+		DBUtil.close(con, pstmt, rs);
+		return list;
+	}
+	
+}

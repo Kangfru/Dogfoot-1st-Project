@@ -1,0 +1,101 @@
+package com.cafeatte.userCafe.controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.cafeatte.main.Controller;
+import com.cafeatte.main.Execute;
+import com.cafeatte.main.Service;
+import com.cafeatte.userCafe.dto.UserCafeDTO;
+
+//서비스로 보낸다.
+
+public class UserCafeController implements Controller{
+
+	//변수타입은 인터페이스 Service (다 상속받고있다.)
+	private Service listService;
+	private Service viewService;
+	private Service writeService;
+	
+	//생성자...
+	public UserCafeController(Service listService, Service viewService, Service writeService) {
+		this.listService = listService;
+		this.viewService = viewService;
+		this.writeService = writeService;
+	}
+	
+	@Override
+	public String execute(HttpServletRequest request, HttpServletResponse response, String uri) throws Exception {
+	
+		String jsp ="";
+		switch (uri) {
+		case "/userCafe/list.do"://list.do요청이 들어오면
+			//listservice를 실행해서 "list"라는 이름으로 request에 담겠다. 그리고 리스트로 보낸다.
+			request.setAttribute("list", Execute.service(listService, 1));
+			jsp = "userCafe/list";
+			break;
+			
+			
+		case "/userCafe/view.do":
+			//view요청들어오면 글번호, 조회수 받아서 viewservice실행시켜서 "view"이름에 담는다. 뷰로 보낸다.
+			int no = Integer.parseInt(request.getParameter("no"));
+			int cnt = Integer.parseInt(request.getParameter("cnt"));
+			request.setAttribute("view", Execute.service(viewService, no, cnt));
+			jsp = "userCafe/view";
+			break;
+
+		case "/userCafe/write.do" :
+			//write요청 들어오면 글쓴뒤 리스트로 리다이렉트시킨다.
+			Execute.service(writeService, 
+							getDTO(request.getParameter("title"),
+									request.getParameter("fileName"),
+									request.getParameter("content")));
+			jsp = "redirect:list.do?page=1&perPageNum="
+					+request.getParameter("perPageNum");
+			break;
+
+//		case 
+//			break;
+//
+//		case
+//			break;
+
+		default:
+			break;
+		}
+		
+		
+		
+		return null;
+	}
+
+	//write용 method
+	//()파라메터를 받아서 userCafeDTO타입의 getDTO 메소드 실행.
+	//{}처리문 : 사용자가입력한(title, fileName, content) 내용 dto에 받아서 리턴함... 
+	private UserCafeDTO getDTO(String title, String fileName, String content) {
+		UserCafeDTO dto = new UserCafeDTO();
+		dto.setTitle(title);
+		dto.setFileName(fileName);
+		dto.setContent(content);
+		return dto;
+	}
+ 
+	
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+}

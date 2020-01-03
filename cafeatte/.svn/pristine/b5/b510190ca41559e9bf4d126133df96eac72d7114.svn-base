@@ -1,0 +1,36 @@
+package com.cafeatte.main.controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.cafeatte.main.Controller;
+import com.cafeatte.main.Execute;
+import com.cafeatte.main.Service;
+import com.cafeatte.util.page.PageObject;
+
+public class MainController implements Controller {
+
+	private Service cafeHTagListService;
+	private Service cafeListService;
+	
+	// 생성자를 이용한 DI 적용
+	public MainController(Service cafeHTagListSerivce, Service cafeListService) {
+		this.cafeHTagListService = cafeHTagListSerivce;
+		this.cafeListService = cafeListService;
+	
+	}
+
+	@Override
+	public String execute(HttpServletRequest request,
+			HttpServletResponse response, String uri) throws Exception {
+	
+		PageObject pageObject = new PageObject(1, 5);
+		request.setAttribute("hTags", Execute.service(cafeHTagListService, pageObject));
+		request.setAttribute("cafeList", Execute.service(cafeListService, pageObject));				
+		
+		pageObject = new PageObject(1,5);
+		
+		return "main/main";
+	}
+
+}

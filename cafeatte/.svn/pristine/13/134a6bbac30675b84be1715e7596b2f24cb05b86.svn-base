@@ -1,0 +1,81 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>내 정보 수정하기</title>
+
+ <style>
+    .left {
+        width: 50%;
+        float: left;
+        box-sizing: border-box;
+    }
+    
+    .right {
+        width: 50%;
+        float: right;
+        box-sizing: border-box;
+    }
+    .mainDiv{
+    	padding: 50px;
+    }
+    tr{
+    	font-size: 20px;
+    }
+    </style>
+</head>
+<body>
+	<div class="mainDiv">
+		<div class="left">
+			<img src="${dto.photo }" width="60%"/>
+				<p>프로필 사진</p>
+		</div>
+		<div class="right">
+			<form action="update.do" method="post" id="updateForm" enctype="multipart/form-data">
+				<input type="hidden" name="photo" class="img-circle" value="${dto.photo }"/>
+				<table class="table">
+					<tr class="form-group">
+						<td>아이디</td><td><input type="text" name="id" value="${dto.id }" style="background: gray;" readonly/></td>
+					</tr>
+					<tr class="form-group">
+						<td>닉네임</td><td><input type="text" name="nickName" value="${dto.nickName }" style="background: gray;" readonly/></td>
+					</tr>
+					<tr class="form-group">
+						<td>주소</td><td><input type="text" name="addr" value="${dto.addr }"/></td>
+					</tr>
+					<tr class="form-group">
+						<td>이메일</td><td><input type="text" name="email" value="${dto.email }"/></td>
+					</tr>
+					<tr class="form-group">
+						<td>전화번호</td><td><input type="text" name="tel" value="${dto.tel }"/></td>
+					</tr>
+				</table>
+				<div class="form-group">
+					<label for="multiFile">프로필 사진 변경</label> 
+					<input type="file" name="upPhoto" class="form-control" id="upPhoto"><br/>
+				</div>
+				<button class="btn btn-default">수정하기</button>
+				<button class="btn btn-default" id="cancleBtn">취소하기</button>
+			</form>
+		</div>
+	</div>
+	<script type="text/javascript">
+	function handleCancleBtn(){
+		const cancleBtn = document.querySelector("#cancleBtn");
+		cancleBtn.addEventListener("click", function(event) {
+			event.preventDefault();
+			location = "view.do";
+		});		
+	}
+	
+	function init(){
+		handleCancleBtn();
+	}
+	init();
+	
+	</script>
+</body>
+</html>

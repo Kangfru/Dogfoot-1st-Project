@@ -1,0 +1,18 @@
+package com.cafeatte.cafe.service;
+
+import com.cafeatte.cafe.dao.CafeDAO;
+import com.cafeatte.main.Service;
+
+public class CafeReplyUpdateService implements Service {
+	private CafeDAO dao;
+	public CafeReplyUpdateService(CafeDAO dao) {
+		// TODO Auto-generated constructor stub
+		this.dao = dao;
+	}
+	@Override
+	public Object service(Object[] objs) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

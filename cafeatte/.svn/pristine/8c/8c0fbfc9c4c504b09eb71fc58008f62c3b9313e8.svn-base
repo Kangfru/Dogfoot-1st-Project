@@ -1,0 +1,63 @@
+package com.cafeatte.main;
+
+import java.io.IOException;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.cafeatte.bean.Beans;
+import com.cafeatte.util.io.ViewResolver;
+
+/**
+ * Servlet implementation class FrontController
+ */
+// url 패턴은 web.xml에 설정
+//@WebServlet("/FrontController")
+public class FrontController extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+	private Controller memberController = Beans.getController("memberController");
+	
+    public FrontController() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#service(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		
+		String jsp = "";
+		try {
+			String uri = request.getServletPath();
+			System.out.println(uri);
+			if(uri.indexOf("/member") == 0) {
+				jsp = memberController.execute(request, response, uri);
+			} else if (uri.indexOf("/notice") == 0){
+				System.out.println("noticeController 처리");
+			} else if (uri.indexOf("/magazine") == 0){
+				System.out.println("magazine 처리");
+			} else if (uri.indexOf("/userCafe") == 0) {
+				System.out.println("userCafe 처리");
+			} else if (uri.indexOf("/cafe") == 0) {
+				System.out.println("cafe 처리");
+			} else if (uri.indexOf("/qna") == 0) {
+				System.out.println("qna처리");
+			} else if (uri.indexOf("/coupon") == 0) {
+				System.out.println("coupon처리");
+			}
+			
+			ViewResolver.forward(request, response, jsp);
+		} catch (Exception e) {
+			throw new ServletException(e);
+		}
+	}
+
+}

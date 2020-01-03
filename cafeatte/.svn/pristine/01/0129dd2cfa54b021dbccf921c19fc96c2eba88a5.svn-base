@@ -1,0 +1,228 @@
+package com.cafeatte.util.filter;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import com.cafeatte.member.dto.LoginDTO;
+
+/**
+ * Servlet Filter implementation class AuthorityFilter
+ */
+@WebFilter("/AuthorityFilter")
+public class AuthorityFilter implements Filter {
+
+	// 로그인 처리가 되어야 하는 URL을 저장하는 변수
+	private List<String> loginList = new ArrayList<String>();
+	// URL에 따른 권한을 저장하는 변수
+	private Map<String, Integer> authMap = new HashMap<String, Integer>();
+	
+    	// 로그인 해야할 URL 등록
+//    	loginList.add("/cafe/delete.do");
+//    	loginList.add("/cafe/updateForm.do");
+//    	loginList.add("/cafe/writeForm.do");
+    	
+    	// 권한 map에 권한이 필요한 URL 등록 - 일반회원(1)은 등록하지 않는다.(로그인이 되어 있는지로 확인가능)
+//    	authMap.put("/cafe/writeForm.do", 9);
+//    	authMap.put("/cafe/updateForm.do", 9);
+//    	authMap.put("/cafe/delete.do", 9);
+    	
+    	
+	/**
+	 * Default constructor.
+	 */
+	public AuthorityFilter() {
+		// TODO Auto-generated constructor stub
+		// 로그인 해야할 URL 등록
+		loginList.add("/notice/writeForm.do");
+		loginList.add("/notice/write.do");
+		loginList.add("/notice/updateForm.do");
+		loginList.add("/notice/update.do");
+		loginList.add("/notice/delete.do");
+		
+		loginList.add("/member/delete.do");
+		loginList.add("/member/view.do");
+		loginList.add("/member/updateForm.do");
+		loginList.add("/member/update.do");
+		loginList.add("/member/checkPwForm.do");
+		loginList.add("/member/checkPw.do");
+		loginList.add("/member/signOutForm.do");
+		loginList.add("/member/signOut.do");
+		loginList.add("/member/changePwForm.do");
+		loginList.add("/member/changePw.do");
+		loginList.add("/member/adminView.do");
+		loginList.add("/member/logout.do");
+		loginList.add("/member/list.do"); // authMap에서 권한으로 처리. 로그인은 되어 있어야 함.
+		loginList.add("/member/changeGrade.do"); // authMap에서 권한으로 처리. 로그인은 되어 있어야 함.
+		loginList.add("/member/changeState.do"); // authMap에서 권한으로 처리. 로그인은 되어 있어야 함.
+
+		loginList.add("/cafe/writeForm.do");
+		loginList.add("/cafe/write.do");
+		loginList.add("/cafe/updateForm.do");
+		loginList.add("/cafe/update.do");
+		loginList.add("/cafe/delete.do");
+		loginList.add("/cafe/replyWrite.do");
+		loginList.add("/cafe/replyReWrite.do");
+		
+		loginList.add("/userCafe/writeForm.do");
+		loginList.add("/userCafe/write.do");
+		loginList.add("/userCafe/updateForm.do");
+		loginList.add("/userCafe/update.do");
+		loginList.add("/userCafe/delete.do");
+
+		loginList.add("/magazine/writeForm.do");
+		loginList.add("/magazine/write.do");
+		loginList.add("/magazine/updateForm.do");
+		loginList.add("/magazine/update.do");
+		loginList.add("/magazine/delete.do");
+
+		loginList.add("/qna/qwriteForm.do");
+		loginList.add("/qna/qwrite.do");
+		loginList.add("/qna/awriteForm.do");
+		loginList.add("/qna/answer.do");
+		loginList.add("/qna/updateForm.do");
+		loginList.add("/qna/update.do");
+		loginList.add("/qna/delete.do");
+
+		loginList.add("/coupon/list.do");
+		loginList.add("/coupon/view.do");
+		loginList.add("/coupon/sendForm.do");
+		loginList.add("/coupon/send.do");
+		loginList.add("/coupon/use.do");
+		loginList.add("/coupon/updateForm.do");
+		loginList.add("/coupon/update.do");
+		loginList.add("/coupon/delete.do");
+		
+		
+		// 권한 map에 권한이 필요한 URL 등록 - 일반회원(1)은 등록하지 않는다.(로그인이 되어 있는지로 확인가능)
+		authMap.put("/notice/writeForm.do", 9);
+		authMap.put("/notice/write.do", 9);
+		authMap.put("/notice/updateForm.do", 9);
+		authMap.put("/notice/update.do", 9);
+		authMap.put("/notice/delete.do", 9);
+		
+		authMap.put("/member/list.do", 9);
+		authMap.put("/member/adminView.do", 9);
+		authMap.put("/member/changeGrade.do", 9);
+		authMap.put("/member/changeState.do", 9);
+		authMap.put("/member/writeForm.do", 9);
+		authMap.put("/member/write.do", 9);
+		authMap.put("/member/delete.do", 9);
+		
+		authMap.put("/cafe/writeForm.do", 9);
+		authMap.put("/cafe/write.do", 9);
+		authMap.put("/cafe/updateForm.do", 9);
+		authMap.put("/cafe/delete.do", 9);
+
+		authMap.put("/magazine/writeForm.do", 5);
+		authMap.put("/magazine/write.do", 5);
+		authMap.put("/magazine/updateForm.do", 5);
+		authMap.put("/magazine/update.do", 5);
+		authMap.put("/magazine/delete.do", 5);
+
+		authMap.put("/qna/qwriteForm.do", 1);
+		authMap.put("/qna/qwrite.do", 1);
+		authMap.put("/qna/awriteForm.do", 9);
+		authMap.put("/qna/awrite.do", 9);
+		authMap.put("/qna/updateForm.do", 1);
+		authMap.put("/qna/update.do", 1);
+		authMap.put("/qna/delete.do", 1);
+		
+		authMap.put("/coupon/update.do", 9);
+		authMap.put("/coupon/updateForm.do", 9);
+		authMap.put("/coupon/send.do", 9);
+		authMap.put("/coupon/sendForm.do", 9);
+		
+	}
+
+	/**
+	 * @see Filter#destroy()
+	 */
+	public void destroy() {
+		// TODO Auto-generated method stub
+	}
+
+	/**
+	 * @see Filter#doFilter(ServletRequest, ServletResponse, FilterChain)
+	 */
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+			throws IOException, ServletException {
+		// TODO Auto-generated method stub
+		// place your code here
+
+		System.out.println("AuthorityFilter.doFilter");
+
+		// 객체 캐스팅 : ServletRequest -> HttpServletRequest
+		HttpServletRequest req = (HttpServletRequest) request;
+		HttpServletResponse res = (HttpServletResponse) response;
+
+		// req에서 session 꺼내기
+		HttpSession session = req.getSession();
+
+		// req에서 session 꺼내와서 Login 정보 가져오기
+		LoginDTO login = (LoginDTO) session.getAttribute("login");
+
+		// URI 가져오기
+		String uri = req.getServletPath();
+		System.out.println("AuthorityFilter.doFilter.uri:" + uri);
+
+		// 로그인이 안되 있고 로그인이 필요한 경우 바로 로그인 페이지로 이동시킨다.
+		if (login == null && loginRequire(uri)) {
+			// 로그인이 성공적으로 되었을 때 요청한 uri를 세션에 저장해 놓았다가
+			// 바로 이동하도록 하기 위해 uri를 저장해 놓는다.
+			session.setAttribute("nextURI", uri);
+			session.setAttribute("msg", "<span style='color:red'>로그인이 필요한 페이지입니다.</span>");
+			res.sendRedirect("/member/loginForm.do");
+			return; // 아래 부분은 처리가 안된다.
+		}
+
+		// 지정한 권한 이상이여야만 처리되도록 하는 부분으로 권한 미만인 경우 권한 부족 페이지로 이동시킨다.
+		if (login != null && !checkAuth(login.getGrade(), uri)) {
+			res.sendRedirect("/error/nonAuth.do");
+			return; // 아래 부분은 처리가 안된다.
+		}
+
+		// pass the request along the filter chain
+		// 여기가 요청한 처리로 이동하게 하는 부분
+		chain.doFilter(request, response);
+	}
+
+	/**
+	 * @see Filter#init(FilterConfig)
+	 */
+	public void init(FilterConfig fConfig) throws ServletException {
+		// TODO Auto-generated method stub
+	}
+
+	// 로그인이 필요한지 알아 내는 메서드
+	private boolean loginRequire(String uri) {
+		for (String str : loginList) {
+			if (uri.equals(str))
+				return true;
+		}
+
+		return false;
+	}
+
+	// 권한이 있는지 알아 내는 메서드
+	private boolean checkAuth(int userGrade, String uri) {
+		Integer pageGrade = authMap.get(uri);
+		if (pageGrade == null || userGrade >= pageGrade)
+			return true;
+		return false;
+	}
+
+}

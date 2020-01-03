@@ -1,0 +1,20 @@
+package com.cafeatte.cafe.service;
+
+import com.cafeatte.cafe.dao.CafeDAO;
+import com.cafeatte.main.Service;
+
+public class CafeReplyUpdateService implements Service {
+	private CafeDAO dao;
+	public CafeReplyUpdateService(CafeDAO dao) {
+		// TODO Auto-generated constructor stub
+		this.dao = dao;
+	}
+	@Override
+	public Integer service(Object[] objs) throws Exception {
+		System.out.println("CafeReplyUpdateService.service()");
+		int replyNo = (int) objs[0];
+		String content = (String) objs[1];
+		return dao.replyUpdate(replyNo, content);
+	}
+
+}

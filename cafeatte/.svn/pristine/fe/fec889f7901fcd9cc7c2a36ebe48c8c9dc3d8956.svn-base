@@ -1,0 +1,35 @@
+package com.cafeatte.userCafe.service;
+
+import com.cafeatte.main.Service;
+import com.cafeatte.userCafe.dao.UserCafeDAO;
+import com.cafeatte.userCafe.dto.UserCafeDTO;
+import com.cafeatte.userLike.dto.UserLikeDTO;
+
+//데이터실행->dao보냄
+public class UserLikeService implements Service{
+	
+	private UserCafeDAO dao;
+	public UserLikeService(UserCafeDAO dao) {
+		this.dao = dao;
+	}
+	
+	//
+	@Override
+	public Object service(Object[] objs) throws Exception {
+		System.out.println("UserLikeService.service()");
+		int no = (int) objs[0];
+		String id = (String) objs[1];
+
+		if(dao.userLikeList(no, id)) {
+			//true면 데이터가 있음 -> 좋아요 취소(userLikedelete)
+			dao.userLikeDelete(no, id);
+			dao.decreaseLike(no, id);
+		}else {
+			//false면 데이터가 없음 -> 좋아요
+			dao.userLikeInsert(no, id);
+			dao.increaseLike(no, id);
+		}
+		return dao.cntLike(no, id);
+	}
+
+}

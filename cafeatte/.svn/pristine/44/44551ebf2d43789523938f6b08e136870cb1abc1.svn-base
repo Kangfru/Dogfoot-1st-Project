@@ -1,0 +1,457 @@
+package com.cafeatte.userCafe.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+import com.cafeatte.userCafe.dto.UserCafeDTO;
+import com.cafeatte.userLike.dto.UserLikeDTO;
+import com.cafeatte.util.db.DBUtil;
+import com.cafeatte.util.page.PageObject;
+import com.cafeatte.util.page.SearchCondition;
+
+public class UserCafeDAO {
+
+	// insert, update, delete(write,update,delete게시판) -> executeUpdate() : result set 안필요
+	// select(list,view게시판) -> executeQuery() : result set 필요
+		
+	//***************************
+	//*           list          *
+	//***************************
+	public List<UserCafeDTO> list(PageObject pageObject) throws Exception{
+		System.out.println("UserCafeDAO.list()");
+		//가져온데이터가 저장될 곳(이걸로 리턴해야 한다)
+		List<UserCafeDTO> list = null;
+		
+		Connection con = DBUtil.getConnection();
+		String sql = " select m.id, u.no, u.title, u.content, m.nickName, u.fileName, " //리스트에는 content가 뿌려지지 않더라도, 검색 기능에서는 content에 대한 검색이 있으므로 가져와야함
+				+ " to_char(u.writeDate, 'yyyy-mm-dd') writeDate, "
+				+ " u.hit, u.cntLike "
+				+ " from userCafe u, member m "
+				+ " where u.id = m.id ";
+				
+		sql = " select rownum rnum, id, no, title, content, nickName, fileName, writeDate, hit, cntLike from (" +sql+ ")";
+		//pageObject - 검색한내용불러오기
+		if(pageObject.getWord()!=null && !pageObject.getWord().equals("")) {
+			sql+= " where 1=2 "; //처음부터 or로 들어가면안되니까. 참고로 오라클문법이므로 1==2로하면 안된다.
+			if(pageObject.getKey().indexOf("t")>=0)
+				sql+= " or title like ? ";
+			if(pageObject.getKey().indexOf("c")>=0)
+				sql+= " or content like ? "; 
+			if(pageObject.getKey().indexOf("n")>=0)
+				sql+= " or nickName like ? ";
+		}
+		sql+= " order by no desc ";
+		//순서번호붙이기
+		//페이지에 맞는 데이터 가져오기
+		sql = " select * from (" +sql+ ") where rnum between ? and ? ";
+		System.out.println("userCafeDAO.list().sql:"+sql);
+		
+		//실행각체가져오기
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		int idx = 1;
+		//getword가 not null이면 검색을 했다는 것이고, 그럼 검색키(제목,작성자,내용)에서 제목이 있다면  
+		if(pageObject.getWord()!=null && !pageObject.getWord().equals("")) {
+			if(pageObject.getKey().indexOf("t")>=0)
+				pstmt.setString(idx++, "%"+pageObject.getWord()+"%");
+			if(pageObject.getKey().indexOf("c")>=0)
+				pstmt.setString(idx++, "%"+pageObject.getWord()+"%");
+			if(pageObject.getKey().indexOf("n")>=0)
+				pstmt.setString(idx++, "%"+pageObject.getWord()+"%");
+		}
+		pstmt.setInt(idx++, pageObject.getStartRow());
+		pstmt.setInt(idx++, pageObject.getEndRow());
+		
+		//slect문일땐 executequery
+		ResultSet rs = pstmt.executeQuery();
+		
+		//표시&저장 - pstmt가 실행되어서 rs에 값이 있으면
+		if (rs!=null) {
+			while(rs.next()) {
+				if(list==null) {
+					list = new ArrayList<UserCafeDTO>();
+				}
+				UserCafeDTO dto = new UserCafeDTO();
+				
+				dto.setId(rs.getString("id"));
+				dto.setNo(rs.getInt("no"));
+				dto.setTitle(rs.getString("title"));
+				dto.setNickName(rs.getString("nickName"));
+				dto.setFileName(rs.getString("fileName"));
+				dto.setWriteDate(rs.getString("writeDate"));
+				dto.setHit(rs.getInt("hit"));
+				dto.setCntLike(rs.getString("cntLike"));
+				
+				list.add(dto);
+			}//end while
+		}
+		DBUtil.close(con, pstmt, rs);
+		System.out.println("UserCafeDAO.list().list"+list);
+		return list;		
+	}//end list();
+	
+	
+
+	//***************************
+	//*     getTotalRow         *
+	//***************************
+	//전체 데이터 개수 가져오기 - 검색하면 검색해서나온만큼의 데이터
+	public int getTotalRow(PageObject pageObject) throws Exception{
+		System.out.println("UserCafeDAO.getTotalRow()");
+		
+		int totalRow = 0;
+		
+		Connection con = DBUtil.getConnection();
+		String sql = " select count(*) cnt from userCafe u, member m where u.id = m.id ";
+		sql += SearchCondition.getSearchSQLWithWhereUserCafe(pageObject);
+		System.out.println("UserCafeDAO.getTotalRow().sql:"+sql);
+		//실행객체 가져오기
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		int idx=1;
+		idx = SearchCondition.setPreparedStatementUserCafe(pstmt, pageObject, idx);
+		//실행
+		ResultSet rs = 	pstmt.executeQuery();
+		
+		//표시,저장 - pstmt가 실행되어서 rs에 값이 있으면 -> 그걸 totalrow에 넣어준다.
+		//rs.next()없애도 되나???????????????????????????
+		if (rs!=null && rs.next())
+			totalRow = rs.getInt("cnt");
+		
+		DBUtil.close(con, pstmt, rs);
+		System.out.println("UserCafeDAO.getTotalRow().totalRow:"+totalRow);
+		return totalRow;
+	}
+	
+		
+	
+	//***************************
+	//*           view          *
+	//***************************
+	public UserCafeDTO view(int no) throws Exception{
+		System.out.println("UserCafeDAO.view().no:"+no);
+		
+		//담을 객체 선언 및 생성
+		UserCafeDTO dto = new UserCafeDTO();
+		
+		
+		Connection con = DBUtil.getConnection();
+		String sql = " select u.id, u.no, u.title, m.nickName, m.photo, u.fileName, u.content, "
+				+ " to_char(u.writeDate, 'yyyy-mm-dd') writeDate, "
+				+ " u.hit, u.cntLike "
+				+ " from userCafe u, member m "
+				+ " where u.id = m.id "
+				+ " and u.no = ? ";
+		System.out.println("UserCafeDAO.view().sql:"+sql);
+		
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, no);
+		
+		ResultSet rs = pstmt.executeQuery();
+		
+		//rs.next() : 다음행으로 실행위치를 이동한다. 이후 한 레코드(row)를 가리킨다.
+		//(다음행이 있으면 true, 없으면 false를 리턴)
+		if(rs!=null && rs.next()) {
+			//담을 객체 생성		
+			dto.setId(rs.getString("id"));
+			dto.setNo(rs.getInt("no"));
+			dto.setTitle(rs.getString("title"));
+			dto.setNickName(rs.getString("nickName"));
+			dto.setFileName(rs.getString("fileName")); 
+			dto.setContent(rs.getString("content"));
+			dto.setWriteDate(rs.getString("writeDate"));
+			dto.setHit(rs.getInt("hit"));
+			dto.setCntLike(rs.getString("cntLike"));
+			dto.setPhoto(rs.getString("photo"));
+				
+		}//end if
+		
+		DBUtil.close(con, pstmt, rs);
+		System.out.println("UserCafeDAO.view().dto:"+dto);
+		return dto;
+		
+	}//end view();
+	
+	
+	
+	//***************************
+	//*       increaseHit       *
+	//***************************
+	//int no는 ListService에서 받아옴
+	public void increaseHit(int no) throws Exception{
+		System.out.println("UserCafeDAO.increaseHit().no:"+no);
+		
+		Connection con = DBUtil.getConnection();
+		
+		String sql = " update userCafe set hit = hit + 1 where no = ? ";
+		
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		System.out.println("UserCafeDAO.increaseHit().sql:"+sql);
+		pstmt.setInt(1, no);
+		
+		int result = pstmt.executeUpdate();
+		if (result==1) 
+			System.out.println("조회수 1 증가성공");
+		else
+			System.out.println("조회수 1 증가 실패");
+		
+		DBUtil.close(con, pstmt);
+	}//end increaseHit()
+	
+	
+	
+		
+		
+
+	//***************************
+	//*          write          *
+	//***************************
+	//게시글을 쓰면 dto에 담아서 그걸 여기서 ()파라메터로 받아옴...
+	public int write(UserCafeDTO dto) throws Exception {
+		System.out.println("userCafeDAO.write().dto:"+dto);
+		
+		Connection con = DBUtil.getConnection();
+		//글쓰기를 할때 새로 입력되는 것만 들어감 (nickname은 기존데이터 불러오는 거라 안들어감.id는 foreign key라서 무조건 넣어야됨....)
+		String sql = " insert into userCafe(no, title, fileName, content, id) "
+				+ " values(userCafe_seq.nextval,?,?,?,?)";
+		System.out.println("userCafeDAO.write().sql:"+sql);
+		
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setString(1, dto.getTitle());
+		pstmt.setString(2, dto.getFileName());
+		pstmt.setString(3, dto.getContent());
+		pstmt.setString(4, dto.getId());
+		
+		int result = pstmt.executeUpdate(); //executeUpdate는 결과 있으면1 없으면 0인 integer타입, executeUpdate는 resultset 안함.
+		if (result==1)
+			System.out.println("글쓰기 성공");
+		else
+			System.out.println("글쓰기 실패");
+			
+		DBUtil.close(con, pstmt);
+		return result;
+	}//write() end
+
+	
+	
+	//***************************
+	//*          update         *
+	//***************************
+	//게시글을 업뎃하면 dto에 담아서 그걸 여기서 ()파라메터로 받아옴...
+	public int update(UserCafeDTO dto, String id) throws Exception{
+		System.out.println("userCafeDAO.update().dto:"+dto);
+
+		Connection con = DBUtil.getConnection();
+		String sql = " update userCafe set title=?, fileName=?, content=? "
+				+ " where no=? and id=?";
+		System.out.println("userCafeDAO.update().sql:"+sql);
+
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setString(1, dto.getTitle());
+		pstmt.setString(2, dto.getFileName());
+		pstmt.setString(3, dto.getContent());
+		pstmt.setInt(4, dto.getNo());
+		pstmt.setString(5,id);// id=id -> 첫번째 아이디는 db에 저장된 글쓴id... 두번째 id는 UsderCafeController에서 세션에서 받아온 로그인된 id... 둘이 일치하면 글수정가능  
+		
+		int result = pstmt.executeUpdate();
+		if (result ==1)
+			System.out.println("글수정성공");
+		else 
+			System.out.println("글수정실패");
+		DBUtil.close(con, pstmt);
+		return result;
+	}
+	
+	
+	
+	//***************************
+	//*          delete         *
+	//***************************
+	public int delete(int no, String id) throws Exception{
+		System.out.println("UserCafeDAO.delete().no:"+no);
+		Connection con = DBUtil.getConnection();
+		
+		String sql = " delete from userCafe where no=? ";
+		if (id=="admin") {
+			sql+=" ";
+		}else {
+			sql+= " and id=? "; 
+		}
+		System.out.println("UserCafeDAO.delete().sql:"+sql);
+
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		if (id=="admin") {
+			pstmt.setInt(1, no);
+		}else {
+			pstmt.setInt(1, no);
+			pstmt.setString(2, id);
+		}
+		
+		System.out.println("UserCafeDAO.delete().sql:"+sql);
+		int result = pstmt.executeUpdate();
+		if (result==1)
+			System.out.println("글삭제성공");
+		else 
+			System.out.println("글삭제실패");
+		DBUtil.close(con, pstmt);
+		return result;
+	}//delete end
+	
+	
+	
+
+	//***************************
+	//*      userLikeList       *
+	//***************************
+	public int userLikeList(int no, String id) throws Exception{
+		System.out.println("UserCafeDAO.userLikeList()");
+		//가져온데이터가 저장될 곳(이걸로 리턴해야 한다)
+		Connection con = DBUtil.getConnection();
+		String sql = " select id, no from userLike where no = ? and id = ?";
+		
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, no);
+		pstmt.setString(2, id);
+		ResultSet rs = pstmt.executeQuery();
+		if (rs!=null && rs.next()) {
+			DBUtil.close(con, pstmt, rs);
+			return 1;//좋아요를 한 상태
+		}
+		DBUtil.close(con, pstmt, rs);
+		return 0;//좋아요 한 적이 없는 상태
+	}//end userLikeList();
+	
+
+
+	//***************************
+	//*       userLikeInsert    *
+	//***************************
+	public int userLikeInsert(int no, String id) throws Exception {
+		System.out.println("userCafeDAO.userLikeInsert().no,id:"+no+","+id);
+		
+		Connection con = DBUtil.getConnection();
+		String sql = " insert into userLike(no, id) "
+				+ " values(?,?)";
+		System.out.println("userCafeDAO.userLikeInsert().sql:"+sql);
+		
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, no);
+		pstmt.setString(2, id);
+		
+		int result = pstmt.executeUpdate(); //executeUpdate는 결과 있으면1 없으면 0인 integer타입, executeUpdate는 resultset 안함.
+		if (result==1)
+			System.out.println("좋아요 누른 사람, 해당 글번호 insert 성공");
+		else
+			System.out.println("좋아요 누른 사람, 해당 글번호 insert 실패");
+			
+		DBUtil.close(con, pstmt);
+		return result;
+	}//userLikeInsert() end
+	
+	
+	
+	//***************************
+	//*       userLikeDelete    *
+	//***************************
+	public int userLikeDelete(int no, String id) throws Exception{
+		System.out.println("UserCafeDAO.userLikeDelete().no,id:"+no+","+id);
+		Connection con = DBUtil.getConnection();
+		
+		String sql = " delete from userLike where no=? and id=? ";
+		System.out.println("UserCafeDAO.userLikeDelete().sql:"+sql);
+
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, no);
+		pstmt.setString(2, id);
+		
+		int result = pstmt.executeUpdate();
+		if (result==1)
+			System.out.println("좋아요누른사람 및 글번호 삭제성공");
+		else 
+			System.out.println("좋아요누른사람 및 글번호 삭제실패");
+		DBUtil.close(con, pstmt);
+		return result;
+	}//userLikeDelete end
+	
+	
+	//***************************
+	//*       increaseLike      *
+	//***************************
+	//int no는 ViewService에서 받아옴
+	public Object increaseLike(int no, String id) throws Exception{
+		System.out.println("UserCafeDAO.increaseLike().no:"+no);
+		Connection con = DBUtil.getConnection();
+		
+		String sql = " update userCafe set cntLike = cntLike + 1 where no = ? ";
+		
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		System.out.println("UserCafeDAO.increaseLike().sql:"+sql);
+		pstmt.setInt(1, no);
+		
+		int result = pstmt.executeUpdate();
+		if (result==1) 
+			System.out.println("좋아요 1 증가성공 cntLike");
+		else //result==0
+			System.out.println("좋아요 1 증가 실패");
+		
+		DBUtil.close(con, pstmt);
+		return result;
+	}//end increaseLike()
+
+	
+	
+	//***************************
+	//*       decreaseLike      *
+	//***************************
+	public void decreaseLike(int no, String id) throws Exception{
+		System.out.println("UserCafeDAO.decreaseLike().no:"+no);
+		
+		Connection con = DBUtil.getConnection();
+		
+		String sql = " update userCafe set cntLike = cntLike - 1 where no = ? ";
+		
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		System.out.println("UserCafeDAO.decreaseLike().sql:"+sql);
+		pstmt.setInt(1, no);
+		
+		int result = pstmt.executeUpdate();
+		if (result==1) 
+			System.out.println("좋아요 1 감소 성공");
+		else
+			System.out.println("좋아요 1 감소 실패");
+		
+		DBUtil.close(con, pstmt);
+	}//end decreaseLike()
+
+	
+	
+	//***************************
+	//*       cntLike	        *
+	//***************************
+	public int cntLike(int no) throws Exception{
+		System.out.println("UserCafeDAO.cntLike().no:"+no);
+		
+		int cntLike = 0;
+		 
+		Connection con = DBUtil.getConnection();
+		String sql = " select cntLike from userCafe where no = ? ";
+		System.out.println("UserCafeDAO.cntLike().sql:"+sql);
+		//실행객체 가져오기
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		pstmt.setInt(1, no);
+
+		//실행
+		ResultSet rs = 	pstmt.executeQuery();
+		
+		if (rs!=null && rs.next())
+			cntLike = rs.getInt("cntLike");
+		
+		DBUtil.close(con, pstmt, rs);
+		System.out.println("UserCafeDAO.cntLike().cntLike:"+cntLike);
+		return cntLike;
+	}//end cntLike()
+	
+	
+}//end UserCafeDAO class;
+
+	

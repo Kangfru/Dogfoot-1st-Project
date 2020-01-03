@@ -1,0 +1,108 @@
+package com.cafeatte.cafe.controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.cafeatte.cafe.dto.CafeDTO;
+import com.cafeatte.main.Controller;
+import com.cafeatte.main.Execute;
+import com.cafeatte.main.Service;
+import com.cafeatte.util.page.PageObject;
+
+public class CafeController implements Controller {
+	private Service listService;
+	private Service viewService;
+	private Service writeService;
+	private Service updateService;
+	private Service deleteService;
+	
+	private Service replyListService;
+	private Service replyWriteService;
+	private Service replyUpdateService;
+	private Service replyDeleteService;
+	
+	public CafeController(Service listService, Service viewService, Service writeService, Service updateService, Service deleteService, 
+			Service replyListService, Service replyWriteService, Service replyUpdateService, Service replyDeleteService) {
+		
+		this.listService = listService;
+		this.viewService = viewService;
+		this.writeService = writeService;
+		this.updateService = updateService;
+		this.deleteService = deleteService;
+
+		this.replyListService = replyListService;
+		this.replyWriteService = replyWriteService;
+		this.replyUpdateService = replyUpdateService;
+		this.replyDeleteService = replyDeleteService;
+	}
+	@Override
+	public String execute(HttpServletRequest request, HttpServletResponse response, String uri) throws Exception {
+		// TODO Auto-generated method stub
+		System.out.println("CafeController.execute()");
+		String jsp = "";
+		int no = 0;
+		int cnt = 0;
+		PageObject pageObject = PageObject.getInstance(request.getParameter("page"), request.getParameter("perPageNum"));
+		switch(uri) {
+		case "/cafe/list.do":
+			System.out.println("CafeController.execute().list");
+			request.setAttribute("pageObject", pageObject);
+			request.setAttribute("list", Execute.service(listService, pageObject));
+			jsp="cafe/list";
+			break;
+		case "/cafe/view.do":
+			System.out.println("CafeController.execute().view");
+			no = Integer.parseInt(request.getParameter("no"));
+			cnt = Integer.parseInt(request.getParameter("cnt"));
+			request.setAttribute("dto", Execute.service(viewService, no, cnt));
+			jsp="cafe/view";
+			break;
+		case "/cafe/writeForm.do":
+			System.out.println("CafeController.execute().writeForm");
+			jsp = "cafe/writeForm";
+			break;
+		case "/cafe/write.do":
+			System.out.println("CafeController.execute().write");
+			Execute.service(writeService, getCafeDTO(request));
+			jsp="redirect:list.do?page=1&perPageNum=" + request.getParameter("perPageNum");
+			break;
+		case "/cafe/updateForm.do":
+			System.out.println("CafeController.execute().updateForm");
+			jsp = "cafe/updateForm";
+			break;
+		case "/cafe/update.do":
+			System.out.println("CafeController.execute().update");
+			no = Integer.parseInt(request.getParameter("no"));
+			jsp="redirect:view.do?no=" + no + "&cnt=0" + "&page=" + pageObject.getPage() + "&perPageNum=" + pageObject.getPerPageNum();
+			break;
+		case "/cafe/delte.do":
+			System.out.println("CafeController.execute().delte");
+			jsp="redirect:list.do?page=1&perPageNum=" + request.getParameter("perPageNum");
+			break;
+		default:
+			break;
+		}//switch end
+		
+		System.out.println("CafeController.execute().jsp : " + jsp);
+		return jsp;
+	}
+	
+	private CafeDTO getCafeDTO(HttpServletRequest request) {
+		// TODO Auto-generated method stub
+		System.out.println("CafeController.getCafeDTO()");
+		CafeDTO dto = new CafeDTO();
+		dto.setId(request.getParameter("id"));
+		dto.setTitle(request.getParameter("title"));
+		dto.setAddr(request.getParameter("addr"));
+		dto.setTel(request.getParameter("tel"));
+		dto.setParking(request.getParameter("parking"));
+		dto.setOpen(request.getParameter("open"));
+		dto.setHoliday(request.getParameter("holiday"));
+		dto.setMenu(request.getParameter("menu"));
+		dto.setFileName1(request.getParameter("fileName1"));
+		dto.setFileName2(request.getParameter("fileName2"));
+		dto.setFileName3(request.getParameter("fileName3"));
+		return dto;	
+	}//getCafeDTO end
+
+}

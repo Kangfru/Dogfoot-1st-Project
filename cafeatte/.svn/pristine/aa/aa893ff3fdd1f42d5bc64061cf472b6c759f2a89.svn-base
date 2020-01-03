@@ -1,0 +1,246 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>카페어때</title>
+<style type="text/css">
+td {
+	padding: 5px
+}
+
+.gray {
+	font-size: 10px;
+}
+ul{
+padding: 0px 0;
+}
+ul li{
+display: inline-block;
+margin: 2px 2px;
+font-size: 14px;
+letter-spacing : -.5px;
+}
+ul li.tag-item{
+padding: 4px 8px;
+background-color: #000;
+	color: #fff;
+}
+.tag-item:hover{
+background-color: orange;
+	color: #fff;
+}
+.del-btn{
+font-size: 12px;
+font-wdight: bold;
+cursor: pointer;
+margin-left: 8px;
+}
+</style>
+<script>
+ $(document).ready(function () {
+
+   var tag = {};
+   var counter = 0;
+
+   // 태그를 추가한다.
+   function addTag (value) {
+       tag[counter] = value; // 태그를 Object 안에 추가
+       counter++; // counter 증가 삭제를 위한 del-btn 의 고유 id 가 된다.
+   }
+
+   // 최종적으로 서버에 넘길때 tag 안에 있는 값을 array type 으로 만들어서 넘긴다.
+   function marginTag () {
+       return Object.values(tag).filter(function (word) {
+           return word !== "";
+       });
+   }
+
+   // 서버에 넘기기
+   $("#cafe-form").on("submit", function (e) {
+       if($("#title").val()==''){
+    	   alert('상호명을 입력해주세요');
+    	   $("#title").focus();
+    	   return false;
+       }
+       if($("#addr").val()==''){
+    	   alert('주소를 입력해주세요');
+    	   $("#addr").focus();
+    	   return false;
+       }
+       if($("#tel").val()==''){
+    	   alert('가게번호를 입력해주세요');
+    	   $("#tel").focus();
+    	   return false;
+       }
+       if($("#parking").val()==''){
+    	   alert('주차공간 여부를 입력해주세요');
+    	   $("#parking").focus();
+    	   return false;
+       }
+       if($("#open").val()==''){
+    	   alert('영업시간을 입력해주세요');
+    	   $("#open").focus();
+    	   return false;
+       }
+       if($("#holiday").val()==''){
+    	   alert('휴일을 입력해주세요');
+    	   $("#holiday").focus();
+    	   return false;
+       }
+       if($("#menu").val()==''){
+    	   alert('메뉴를 입력해주세요');
+    	   $("#menu").focus();
+    	   return false;
+       }
+       if($("#fileName1").val()==''){
+    	   alert('리스트에 출력할 이미지를 첨부하세요');
+    	   $("#fileName1").focus();
+    	   return false;
+       }
+       if($("#fileName2").val()==''){
+    	   alert('상단에 출력할 이미지를 첨부하세요');
+    	   $("#fileName2").focus();
+    	   return false;
+       }
+	   var value = marginTag(); // return array
+       $("#hTag").val(value); 
+       if(value==''){
+    	   alert('해시태그를 입력하세요');
+    	   $("#tag").focus();
+    	   return false;
+       }
+       $(this).submit();
+   });
+
+   $("#tag").on("keypress", function (e) {
+       var self = $(this);
+
+       // input 에 focus 되있을 때 엔터 및 스페이스바 입력시 구동
+       if (e.key === "Enter" || e.keyCode == 32) {
+
+           var tagValue = self.val(); // 값 가져오기
+
+           // 값이 없으면 동작 ㄴㄴ
+           if (tagValue !== "") {
+
+               // 같은 태그가 있는지 검사한다. 있다면 해당값이 array 로 return 된다.
+               var result = Object.values(tag).filter(function (word) {
+                   return word === tagValue;
+               })
+           
+               // 태그 중복 검사
+               if (result.length == 0) { 
+                   $("#tag-list").append("<li class='tag-item'>"+tagValue+"<span class='del-btn' idx='"+counter+"'>x</span></li>");
+                   addTag(tagValue);
+                   self.val("");
+               } else {
+                   alert("태그값이 중복됩니다.");
+               }
+           }
+           e.preventDefault(); // SpaceBar 시 빈공간이 생기지 않도록 방지
+       }
+   });
+// 삭제 버튼 
+   // 삭제 버튼은 비동기적 생성이므로 document 최초 생성시가 아닌 검색을 통해 이벤트를 구현시킨다.
+   $(document).on("click", ".del-btn", function (e) {
+       var index = $(this).attr("idx");
+       tag[index] = "";
+       $(this).parent().remove();
+   });
+});
+</script>
+</head>
+<body>
+	<form id="cafe-form" action="write.do?page=${param.page}&perPageNum=${param.perPageNum}" method="post" enctype="multipart/form-data">
+		<input type="hidden" name="page" value=1 />
+		<input type="hidden" name="perPageNum" value=10 />
+		<input type="hidden" name="id" value="${login.id }" />
+		<div>
+			<font size="30px"><b><input type="text" id="title"
+					name="title" placeholder="상호명"></b></font>
+		</div>
+		<div>
+			<table class="gray">
+				<tr height="25px">
+					<td width="100px" align="left">Hit: 0</td>
+					<td width="100px" align="left">Comment: 0</td>
+					<td width="350" align="right">WriteDate</td>
+				</tr>
+			</table>
+		</div>
+		<hr style="margin: 2px; border: solid 1px; width: 550px">
+		<div class="content">
+			<table style="margin-top: 10px;">
+				<tr>
+					<td width="70px">주소</td>
+					<td width="20px" align="center"><b>|</b></td>
+					<td><input type="text" id="addr" name="addr"></td>
+				</tr>
+				<tr>
+					<td>전화번호</td>
+					<td align="center"><b>|</b></td>
+					<td><input type="text" id="tel" name="tel"></td>
+				</tr>
+				<tr>
+					<td>주차공간</td>
+					<td align="center"><b>|</b></td>
+					<td><input type="text" id="parking" name="parking"></td>
+				</tr>
+				<tr>
+					<td>영업시간</td>
+					<td align="center"><b>|</b></td>
+					<td><input type="text" id="open" name="open"></td>
+				</tr>
+				<tr>
+					<td>휴무일</td>
+					<td align="center"><b>|</b></td>
+					<td><input type="text" id="holiday" name="holiday"></td>
+				</tr>
+				<tr>
+					<td>메뉴</td>
+					<td align="center"><b>|</b></td>
+				</tr>
+				<tr>
+					<td colspan="3"><textarea id="menu" name="menu" rows="15"
+							cols="90"></textarea></td>
+				</tr>
+				<tr>
+					<td>첨부파일</td>
+					<td align="center"><b>|</b></td>
+				</tr>
+				<tr>
+				<tr>
+					<td colspan="2">List Image :</td>
+					<td><input type="file" id="fileName1" name="fileName1"></td>
+				</tr>
+				<tr>
+					<td colspan="2">Top Image :</td>
+					<td><input type="file" id="fileName2" name="fileName2"></td>
+				</tr>
+				<tr>
+					<td colspan="2">Etc Image :</td>
+					<td><input type="file" id="fileName3" name="fileName3"></td>
+				</tr>
+				<tr>
+					<td>해시태그</td>
+					<td align="center"><b>|</b></td>
+					<td><input type="text" id="tag" size="20" placeholder="해시태그"/></td>
+				</tr>
+				<tr>
+					<td colspan="3"><ul id="tag-list"></ul></td>
+				</tr>
+				<tr><td>
+				<input type="hidden" value="" name="hTag" id="hTag"/>
+				</td></tr>
+			</table>
+		</div>
+	<div style="width: 700px" align="right">
+	<button type="submit">등록</button>
+	<input type="reset" value="취소">
+	<a href="list.do?page=${param.page}&perPageNum=${param.perPageNum}"><input type="button" value="목록"></a>
+	</div>
+	</form>
+</body>
+</html>

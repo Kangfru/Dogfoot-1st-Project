@@ -1,0 +1,17 @@
+package com.cafeatte.userCafe.service;
+
+import com.cafeatte.main.Service;
+import com.cafeatte.userCafe.dao.UserCafeDAO;
+
+public class UserCafeUpdateService implements Service{
+
+	private final UserCafeDAO dao;
+	public UserCafeUpdateService(UserCafeDAO dao) {
+		this.dao = dao;
+	}
+	@Override
+	public Object service(Object[] objs) throws Exception {
+		
+		return null;
+	}
+}

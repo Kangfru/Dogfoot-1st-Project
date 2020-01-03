@@ -1,0 +1,217 @@
+package com.cafeatte.member.controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import com.cafeatte.main.Controller;
+import com.cafeatte.main.Execute;
+import com.cafeatte.main.Service;
+import com.cafeatte.member.dto.MemberDTO;
+import com.cafeatte.util.page.PageObject;
+import com.oreilly.servlet.MultipartRequest;
+import com.oreilly.servlet.multipart.DefaultFileRenamePolicy;
+import com.cafeatte.member.dto.LoginDTO;
+import com.webjjang.util.ImageResizing;
+import com.cafeatte.util.io.FileUtil;
+
+public class MemberController implements Controller {
+
+	private Service changePwService, findIdService, findPwService, 
+	joinService, listService, loginService, signOutService, viewService,
+	pwCheckService, updateService;
+	
+	public MemberController(Service changePwService, Service findIdService, Service findPwService, Service joinService, 
+			Service listService, Service loginService, Service signOutService, Service viewService, Service pwCheckService, Service updateService) {
+		this.changePwService = changePwService;
+		this.findIdService = findIdService;
+		this.findPwService = findPwService;
+		this.joinService = joinService;
+		this.listService = listService;
+		this.loginService = loginService;
+		this.signOutService = signOutService;
+		this.viewService = viewService;
+		this.pwCheckService = pwCheckService;
+		this.updateService = updateService;
+	}
+	
+	@Override
+	public String execute(HttpServletRequest request, HttpServletResponse response, String uri) throws Exception {
+		// TODO Auto-generated method stub
+		String jsp = "";
+		HttpSession session = request.getSession();
+		int result = 0;
+		PageObject pageObject = PageObject.getInstance(request.getParameter("page"), request.getParameter("perPageNum"));
+		String key = request.getParameter("key");
+		String word = request.getParameter("word");
+		if(word != null) {
+			pageObject.setKey(key);
+			pageObject.setWord(word);
+		}
+		
+		switch(uri) {
+		case "/member/login.do":
+			// 넘어오는 데이터를 받아서 LoginDTO를 생성한다.
+			LoginDTO dto = new LoginDTO(request.getParameter("id"), request.getParameter("pw"));
+			// session에 DB에서 찾아온 데이터 저장하기
+			session.setAttribute("login", Execute.service(loginService, dto));
+			
+			// 정상적으로 로그인이 된 경우
+			
+			// 자동으로 리스트로 이동시켜야 한다.
+			String nextURI = (String) session.getAttribute("nextURI");
+			if(nextURI != null) {
+				jsp = "redirect:"+nextURI;
+				session.removeAttribute("nextURI");
+			}else {
+				jsp ="redirect:/main.do";
+			}
+			break;
+			
+		case "/member/logout.do":
+			// 로그아웃 처리
+			session.invalidate();
+			jsp ="redirect:/main.do";
+			break;
+
+		case "/member/view.do":
+			getDTOFromSessionToAttribute(request, session);
+			jsp = "member/view";
+			break;
+		case "/member/updateForm.do":
+			getDTOFromSessionToAttribute(request, session);
+			jsp = "member/updateForm";
+			break;
+			
+		case "/member/update.do":
+			result = (int) Execute.service(updateService, upDTO(request));
+			getDTOFromSessionToAttribute(request, session);
+			jsp = "member/view";
+			break;
+		case "/member/loginForm.do":
+			jsp = "member/loginForm";
+			break;
+			
+		case "/member/joinForm.do":
+			jsp = "member/joinForm";
+			break;
+			
+		case "/member/join.do":
+			Execute.service(joinService, joinDTO(request));
+			break;
+		case "/member/checkPwForm.do":
+			jsp = "member/checkPwForm";
+			break;	
+			
+		case "/member/checkPw.do":
+			System.out.println("checkPw.do");
+			LoginDTO dto2 = (LoginDTO) session.getAttribute("login");
+			String id2 = dto2.getId();
+			String pw = request.getParameter("pw");
+			result = (int) Execute.service(pwCheckService, id2, pw);
+			if(result == 0) {
+				jsp = "redirect:main.do";
+				break;
+			}
+			jsp = "member/updateForm";
+			break;	
+			
+		case "/member/list.do":
+			request.setAttribute("pageObject", pageObject);
+			request.setAttribute("list", Execute.service(listService, pageObject));
+			jsp = "member/list";
+			break;
+		case "/member/adminView.do":
+			request.setAttribute("dto", Execute.service(viewService, request.getParameter("id")));
+			jsp = "member/adminView";
+			break;
+			
+		case "/member/findId.do":
+			Execute.service(findIdService, 1);
+			break;
+			
+		case "/member/findPw.do":
+			Execute.service(findPwService, 1);
+			break;
+			
+		case "/member/changePw.do":
+			Execute.service(changePwService, 1);
+			break;
+			
+		case "/member/singOut.do":
+			Execute.service(signOutService, 1);
+			break;
+		}
+		return jsp;
+	}
+	
+	private MemberDTO joinDTO(HttpServletRequest request) throws Exception {
+		String uploadPath = request.getServletContext().getRealPath("upload/member/profile/images");
+		String path = "/upload/member/profile/images/";
+		MultipartRequest multi = new MultipartRequest(request, uploadPath, 1024*1024*10, "UTF-8", new DefaultFileRenamePolicy());
+		String fileName = path + multi.getFilesystemName("photo");
+		if(fileName != null && !fileName.equals("") && !fileName.equals(path + "null")) {
+			ImageResizing.imageResizing(uploadPath, multi.getFilesystemName("photo"), "s_", 100);
+		}
+		MemberDTO dto = new MemberDTO();
+		
+		dto.setId(multi.getParameter("id"));
+		dto.setPw(multi.getParameter("pw"));
+		dto.setNickName(multi.getParameter("nickName"));
+		String[] tel = multi.getParameterValues("tel");
+		String colTel = tel[0] + "-" + tel[1] + "-" + tel[2];
+		dto.setTel(colTel);
+		dto.setAddr(multi.getParameter("addr"));
+		dto.setEmail(multi.getParameter("email"));
+		dto.setQuestion(multi.getParameter("question"));
+		dto.setAnswer(multi.getParameter("answer"));
+		if(fileName != null && !fileName.equals("") && !fileName.equals(path + "null")) {
+			dto.setPhoto(fileName);
+		} else {
+			dto.setPhoto(path + "default.jpg");
+		}
+		
+		return dto;
+	}
+	
+	private MemberDTO upDTO(HttpServletRequest request) throws Exception {
+		MemberDTO dto = new MemberDTO();
+		String uploadPath = request.getServletContext().getRealPath("upload/member/profile/images");
+		String path = "/upload/member/profile/images/";
+		
+		MultipartRequest multi = new MultipartRequest(request, uploadPath, 1024*1024*10, "UTF-8", new DefaultFileRenamePolicy());
+		String fileName = path + multi.getFilesystemName("upPhoto");
+		if(fileName != null && !fileName.equals("") && !fileName.equals(path + "null")) {
+			ImageResizing.imageResizing(uploadPath, multi.getFilesystemName("upPhoto"), "s_", 100);
+			FileUtil.deleteFile(FileUtil.realPath(request, multi.getParameter("photo")));
+			String smallPhoto = multi.getParameter("photo");
+			int pos = smallPhoto.lastIndexOf("/");
+			smallPhoto = smallPhoto.substring(0, pos + 1) + "s_" + smallPhoto.substring(pos + 1);
+			FileUtil.deleteFile(FileUtil.realPath(request, smallPhoto));
+		}
+		
+		System.out.println("upDTO" + multi.getOriginalFileName("upPhoto"));
+		dto.setId(multi.getParameter("id"));
+		dto.setAddr(multi.getParameter("addr"));
+		dto.setEmail(multi.getParameter("email"));
+		dto.setTel(multi.getParameter("tel"));
+		if(fileName != null && !fileName.equals("") && !fileName.equals(path + "null")) {
+			dto.setPhoto(fileName);
+		} else {
+			dto.setPhoto(multi.getParameter("photo"));
+		}
+		System.out.println(dto);
+		return dto;
+	}
+	
+	private void getDTOFromSessionToAttribute (HttpServletRequest request, HttpSession session) throws Exception{
+		LoginDTO viewDTO = (LoginDTO) session.getAttribute("login");
+		String id = viewDTO.getId();
+		request.setAttribute("dto", Execute.service(viewService, id));
+	}
+	
+//	private MemberDTO getDTOFromId(String id) throws Exception {
+//		return (MemberDTO) Execute.service(viewService, id);
+//	}
+	
+}

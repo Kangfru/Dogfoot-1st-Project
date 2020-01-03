@@ -1,0 +1,455 @@
+<%@page import="com.cafeatte.member.dto.LoginDTO"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+	<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%
+// String id;
+// int grade;
+// if(session.getAttribute("login") != null){
+// 	id = ((LoginDTO)session.getAttribute("login")).getId();
+// 	grade = ((LoginDTO)session.getAttribute("login")).getGrade();
+// 	pageContext.setAttribute("id", id);
+// 	pageContext.setAttribute("grade", grade);
+
+// }else{
+// 	id = "";
+// }
+%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>카페어때</title>
+<style type="text/css">
+td {
+	padding: 5px
+}
+
+.gray {
+	font-size: 10px;
+}
+
+ul {
+	padding: 0px 0;
+}
+
+ul li.tag-item {
+	padding: 4px 8px;
+	list-style: none;
+	background-color: #000;
+	color: #fff;
+}
+
+.tag-item:hover {
+	background-color: orange;
+	color: #fff;
+}
+
+#star:hover{
+	cursor: pointer;
+}
+
+.del-btn {
+	font-size: 12px;
+	font-wdight: bold;
+	cursor: pointer;
+	margin-left: 8px;
+}
+</style>
+<script>
+
+var FT = 0;
+var check = 0;
+	$(document)
+			.ready(
+					function() {
+						FT = "${favorite}";
+						var f = document.getElementById('star');
+						if(${!empty login.id }){
+							if(FT == 0){
+								f.src="/upload/cafe/icon/icon_01.png";
+								check=0;
+							}else{
+								f.src="/upload/cafe/icon/icon_02.png";
+								check=1;
+							}
+						}
+						
+						var tag = {};
+						var counter = 0;
+						var tagValue = "";
+
+						var str = "${hTags}";
+						if (str !== "") {
+							tagValue = str.split(',');
+							for (var i = 0; i < tagValue.length; i++) {
+								$("#tag-list")
+										.append(
+												"<li class='tag-item'>"
+														+ tagValue[i]
+														+ "</li>");
+								addTag(tagValue[i]);
+							}
+						}
+
+						// 태그를 추가한다.
+						function addTag(value) {
+							tag[counter] = value; // 태그를 Object 안에 추가
+							counter++; // counter 증가 삭제를 위한 del-btn 의 고유 id 가 된다.
+						};
+						
+						$(function(){
+							$(".tag-item").click(function(){
+								var word = $(this).text();
+								if(word === "#전체"){
+									word = "";
+								}
+								location="list.do?page=1"
+									+ "&perPageNum=${pageObject.perPageNum}"
+									+ "&word="+word;
+							})
+						})
+					});
+					
+	$(function(){
+		$("#star").click(function(){
+			var f = document.getElementById('star');
+			var id = "${login.id }";
+			var no = ${param.no}; 
+			$("#star").load("/ajax/checkStar.do", {no: no, id: id, vr: 1});
+			if(check == 0){
+				check = 1;
+				f.src="/upload/cafe/icon/icon_02.png";
+			}else{
+				check = 0;
+				f.src="/upload/cafe/icon/icon_01.png";
+			}
+		});
+		
+		$("#deleteBtn").click(function() {
+			if (!confirm("정말 삭제하시겠습니까?"))
+				return false; //a tag의 href를 취소시킨다->location.href를 변경하는 태그
+		});
+		
+		$(".writeBtn").click(function(){
+			// 모달창 제목 셋팅
+			$(".modal-header > h4")
+					.html(
+							"<span class='glyphicon glyphicon-pencil'></span> 댓글 쓰기");
+
+			// 값을 비운다.
+			$("#modal_content").val("");
+
+			// 전송 버튼의 글자 셋팅
+			$("#updateModal_updateBtn").text("등록");
+
+			// 받는 url을 정한다.
+			$("#modal_form").attr("action", "replyWrite.do")
+
+			$("#updateModal").modal();
+		});//writeBtn end
+		$(".reWriteBtn").click(function(){
+			// 모달창 제목 셋팅
+			$(".modal-header > h4")
+					.html(
+							"<span class='glyphicon glyphicon-pencil'></span> 댓글 쓰기");
+
+			// 값을 비운다.
+			$("#modal_content").val("");
+
+			// 전송 버튼의 글자 셋팅
+			$("#updateModal_updateBtn").text("등록");
+
+			// 받는 url을 정한다.
+			$("#modal_form").attr("action", "replyReWrite.do")
+	
+			$("#updateModal").modal();
+		});//reWriteBtn end
+		$(".updateBtns").click(function() {
+			// 데이터 수집
+			var row = $(this).closest(".dataRow");
+			var replyNo = row.data("rep");
+			var content = row.find(".content").text();
+
+			// 모달창 제목 셋팅
+			$(".modal-header > h4")
+					.html(
+							"<span class='glyphicon glyphicon-pencil'></span> 댓글 수정");
+
+			// 전송 버튼의 글자 셋팅
+			$("#updateModal_updateBtn").text("수정");
+
+			// 모달창에 셋팅
+			$("#modal_replyNo").val(replyNo);
+			$("#modal_content").val(content);
+
+			// 받는 url을 정한다.
+			$("#modal_form").attr("action", "replyUpdate.do")
+
+			$("#updateModal").modal();
+		});//updateBTns end
+		$(".deleteBtns").click(function() {
+			var row = $(this).closest(".dataRow");
+			var replyNo = row.data("rep");
+			var content = row.find(".content").text();
+			$("#updateModal_deleteBtn").text("삭제");
+			$("#delete_modal_content").text(content);
+			$("#delete_modal_replyNo").val(replyNo);
+			$("#deleteModal").modal();
+			
+			// 받는 url을 정한다.
+			$("#modal_form").attr("action", "replyDelete.do")
+		});//deletenBtns end
+	});
+</script>
+<script type="text/javascript"
+	src="//dapi.kakao.com/v2/maps/sdk.js?appkey=bc47e2d6301babd8ad5806da30e44e7b&libraries=services"></script>
+<script type="text/javascript">
+	$(document)
+			.ready(
+					function() {
+						var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
+						mapOption = {
+							center : new kakao.maps.LatLng(33.450701,
+									126.570667), // 지도의 중심좌표
+							level : 3
+						// 지도의 확대 레벨
+						};
+
+						// 지도를 생성합니다    
+						var map = new kakao.maps.Map(mapContainer, mapOption);
+						var geocoder = new kakao.maps.services.Geocoder();
+						geocoder
+								.addressSearch(
+										"${dto.addr }",
+										function(result, status) {
+											// 정상적으로 검색이 완료됐으면 
+											if (status === kakao.maps.services.Status.OK) {
+
+												var coords = new kakao.maps.LatLng(
+														result[0].y,
+														result[0].x);
+
+												// 결과값으로 받은 위치를 마커로 표시합니다
+												var marker = new kakao.maps.Marker(
+														{
+															map : map,
+															position : coords
+														});
+												// 인포윈도우로 장소에 대한 설명을 표시합니다
+												var infowindow = new kakao.maps.InfoWindow(
+														{
+															content : `<div style="width:150px;text-align:center;padding:6px 0;">${dto.title }</div>`
+														// "" '' ``
+														});
+												infowindow.open(map, marker);
+
+												// 지도의 중심을 결과값으로 받은 위치로 이동시킵니다
+												map.setCenter(coords);
+											}
+										});
+					});
+</script>
+</head>
+<body>
+	<table width="100%">
+		<tr>
+			<td colspan="2"><img alt="TopImage" src="${dto.fileName2 }"
+				style="width: 100%; height: 150px"></td>
+		</tr>
+		<tr>
+			<%--left//cafe content --%>
+			<td width="50%">
+				<div>
+					<font size="30px"><b>${dto.title }</b></font>
+				</div>
+				<div>
+					<table class="gray">
+						<tr height="25px">
+							<td width="100px" align="left">Hit: ${dto.hit }</td>
+							<td width="100px" align="left">Comment: ${dto.replyCnt }</td>
+							<td width="50px" align="left"><img id="star" src="" width="40%"></td>
+							<td width="350px" align="right">${dto.writeDate }</td>
+						</tr>
+					</table>
+				</div>
+				<hr style="margin: 2px; border: solid 1px; width: 550px">
+				<div align="right">
+					<c:if test="${login.grade == 9 }">
+						<a
+							href="updateForm.do?no=${dto.no }&page=${param.page }&perPageNum=${param.perPageNum}&word=${param.word}"><button>수정</button></a>
+						<a
+							href="delete.do?no=${dto.no }&perPageNum=${param.perPageNum }&deleteFile1=${dto.fileName1}&deleteFile2=${dto.fileName2}&deleteFile3=${dto.fileName3}&word=${param.word}"
+							id="deleteBtn"><button>삭제</button></a>
+					</c:if>
+					<a
+						href="list.do?page=${param.page }&perPageNum=${param.perPageNum }&word=${param.word}"><button>목록</button></a>
+				</div>
+				<div class="content">
+					<table style="margin-top: 10px;">
+						<tr>
+							<td width="70px">주소</td>
+							<td width="20px" align="center"><b>|</b></td>
+							<td>${dto.addr }</td>
+						</tr>
+						<tr>
+							<td>전화번호</td>
+							<td align="center"><b>|</b></td>
+							<td>${dto.tel }</td>
+						</tr>
+						<tr>
+							<td>주차공간</td>
+							<td align="center"><b>|</b></td>
+							<td>${dto.parking }</td>
+						</tr>
+						<tr>
+							<td>영업시간</td>
+							<td align="center"><b>|</b></td>
+							<td>${dto.open }</td>
+						</tr>
+						<tr>
+							<td>휴무일</td>
+							<td align="center"><b>|</b></td>
+							<td>${dto.holiday }</td>
+						</tr>
+						<tr>
+							<td>메뉴</td>
+							<td align="center"><b>|</b></td>
+						</tr>
+						<tr>
+							<td colspan="3">${dto.menu }</td>
+						</tr>
+						<tr>
+							<td colspan="3"><img alt="" src="${dto.fileName3 }"></td>
+						</tr>
+					</table>
+				</div>
+			</td>
+			<%--right//map and comment --%>
+			<td width="50%" style="padding: 0">
+				<table width="100%">
+					<tr>
+						<td>
+							<div id="map" style="width: 100%; height: 300px; margin: 0"></div>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div id="hTags" style="hteight: 20%">
+								<ul id="tag-list"></ul>
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td colsapn="3">
+						<!-- 댓글div -->
+						<div>
+						<button type="button" class="btn btn-success writeBtn btn-xs">댓글쓰기</button>
+						<div id="replyList">
+		<c:if test="${!empty replyList }">
+			<ul class="list-group">
+			<c:forEach var="rep" items="${replyList }">
+					<li class="list-group-item dataRow" data-rep="${rep.replyNo }">
+						<h5>
+							<span class="id">${rep.id }</span>( ${rep.writeDate } )
+						</h5> <span class="content">${rep.content }</span>
+						<span class="badge btn-group" style="background: white;">
+							<c:if test="${login.id eq rep.id }">
+							<button type="button" class="btn btn-primary updateBtns btn-xs">수정</button>
+							<button type="button" class="btn btn-warning deleteBtns btn-xs">삭제</button>
+							</c:if>
+						</span>
+					</li>
+				</c:forEach>
+			</ul>
+		</c:if>
+	</div>
+							</div><!-- 댓글div end -->
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+	
+	<!-- 댓글 달기와 수정을 위한 Modal -->
+	<div class="modal fade" id="updateModal" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header" style="padding: 35px 50px;">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4>
+						<span class="glyphicon glyphicon-pencil"></span> 댓글 수정
+					</h4>
+				</div>
+				<div class="modal-body" style="padding: 40px 50px;">
+					<form role="form" method="post" id="modal_form">
+						<input type="hidden" name="replyNo" id="modal_replyNo" value="${rep.replyNo }"> 
+						<input name="no" type="hidden" value="${dto.no }" /> <input name="id" type="hidden" value="${login.id }" />
+						<input name="page"
+							type="hidden" value="${param.page }" /> <input name="perPageNum"
+							type="hidden" value="${param.perPageNum }" />
+						<div class="form-group">
+							<label for="modal_content"> <span
+								class="glyphicon glyphicon-calendar"></span> 내용
+							</label>
+							<textarea class="form-control" id="modal_content" name="content"
+								rows="3"></textarea>
+						</div>
+						<div class="btn-group right">
+							<button type="submit" class="btn btn-primary"
+								id="updateModal_updateBtn">수정</button>
+							<button type="button" class="btn btn-warning"
+								data-dismiss="modal">
+								<span class="glyphicon glyphicon-remove"></span> 취소
+							</button>
+						</div>
+					</form>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<!-- 댓글 삭제를 위한 Modal -->
+	<div class="modal fade" id="deleteModal" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header" style="padding: 35px 50px;">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4>
+						<span class="glyphicon glyphicon-remove"></span> 댓글 삭제
+					</h4>
+				</div>
+				<div class="modal-body" style="padding: 40px 50px;">
+					<div class="alert alert-warning">
+						<strong>주의</strong> 아래 댓글의 정말로 삭제하시겠습니까?
+					</div>
+					<div id="delete_modal_content">댓글 내용</div>
+				</div>
+				<div class="modal-footer" style="padding: 40px 50px;">
+					<form role="form" method="post" id="modal_delete_form"
+						action="replyDelete.do">
+						<input type="hidden" name="replyNo" id="delete_modal_replyNo" value="${rep.replyNo }"> <input
+							name="no" type="hidden" value="${dto.no }" /> <input name="page"
+							type="hidden" value="${param.page }" /> <input name="perPageNum"
+							type="hidden" value="${param.perPageNum }" />
+						<div class="btn-group">
+							<button type="submit" class="btn btn-primary">삭제</button>
+							<button type="button" class="btn btn-warning"
+								data-dismiss="modal">
+								<span class="glyphicon glyphicon-remove"></span> 취소
+							</button>
+						</div>
+					</form>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</body>
+</html>

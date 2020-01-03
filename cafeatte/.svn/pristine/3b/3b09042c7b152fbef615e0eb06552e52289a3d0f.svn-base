@@ -1,0 +1,73 @@
+package com.cafeatte.reply.dto;
+
+public class ReplyDTO {
+	private int replyNo;
+	private String id;
+	private String content;
+	private String writeDate;
+	private int refNo;
+	private int levNo;
+	private int ordNo;
+	private int parentNo;
+	private int no;
+	public int getReplyNo() {
+		return replyNo;
+	}
+	public void setReplyNo(int replyNo) {
+		this.replyNo = replyNo;
+	}
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+	public String getContent() {
+		return content;
+	}
+	public void setContent(String content) {
+		this.content = content;
+	}
+	public String getWriteDate() {
+		return writeDate;
+	}
+	public void setWriteDate(String writeDate) {
+		this.writeDate = writeDate;
+	}
+	public int getRefNo() {
+		return refNo;
+	}
+	public void setRefNo(int refNo) {
+		this.refNo = refNo;
+	}
+	public int getLevNo() {
+		return levNo;
+	}
+	public void setLevNo(int levNo) {
+		this.levNo = levNo;
+	}
+	public int getOrdNo() {
+		return ordNo;
+	}
+	public void setOrdNo(int ordNo) {
+		this.ordNo = ordNo;
+	}
+	public int getParentNo() {
+		return parentNo;
+	}
+	public void setParentNo(int parentNo) {
+		this.parentNo = parentNo;
+	}
+	public int getNo() {
+		return no;
+	}
+	public void setNo(int no) {
+		this.no = no;
+	}
+	@Override
+	public String toString() {
+		return "ReplyDTO [replyNo=" + replyNo + ", id=" + id + ", content=" + content + ", writeDate=" + writeDate
+				+ ", refNo=" + refNo + ", levNo=" + levNo + ", ordNo=" + ordNo + ", parentNo=" + parentNo + ", no=" + no
+				+ "]";
+	}
+}

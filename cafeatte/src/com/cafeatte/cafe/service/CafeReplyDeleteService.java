@@ -1,0 +1,21 @@
+package com.cafeatte.cafe.service;
+
+import com.cafeatte.cafe.dao.CafeDAO;
+import com.cafeatte.main.Service;
+
+public class CafeReplyDeleteService implements Service {
+	private CafeDAO dao;
+	
+	public CafeReplyDeleteService(CafeDAO dao) {
+		// TODO Auto-generated constructor stub
+		this.dao = dao;
+	}
+	@Override
+	public Object service(Object[] objs) throws Exception {
+		System.out.println("CafeReplyDeleteService.service()");
+		int replyNo = (int) objs[0];
+		String id = (String) objs[1];
+		return dao.replyDelete(replyNo, id);
+	}
+
+}

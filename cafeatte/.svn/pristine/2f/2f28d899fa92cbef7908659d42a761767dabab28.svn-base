@@ -1,0 +1,89 @@
+package com.cafeatte.reply.dto;
+
+
+public class ReplyDTO {
+	private int replyNo;
+	private String id;
+	private String content;
+	private String writeDate;
+	private int refNo;
+	private int levNo;
+	private int ordNo;
+	private int parentNo;
+	private int no;
+	
+	public void setOperateNo(ReplyDTO dto) { // 보고있는 글을 전달 받는다.
+		// 관련글번호는 그대로 넣는다.
+		refNo = dto.getRefNo();
+		// 순서 번호는 1 증가 시킨다. 
+		// -> 1증가시킨 순서번호와 같거나 큰 번호들의 데이터의 순서 1증시키는 것으 service
+		ordNo = dto.getOrdNo() + 1;
+		// 들여쓰기는 1 증가 시킨다.
+		levNo = dto.getLevNo() + 1;
+		// 부모글은 원본글의 글번호를 넣는다.
+		parentNo = dto.getReplyNo();
+		// no는 댓글이 달린 cafe 글번호를 넣는다.
+		no = dto.getNo();
+	}
+	
+	public int getReplyNo() {
+		return replyNo;
+	}
+	public void setReplyNo(int replyNo) {
+		this.replyNo = replyNo;
+	}
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+	public String getContent() {
+		return content;
+	}
+	public void setContent(String content) {
+		this.content = content;
+	}
+	public String getWriteDate() {
+		return writeDate;
+	}
+	public void setWriteDate(String writeDate) {
+		this.writeDate = writeDate;
+	}
+	public int getRefNo() {
+		return refNo;
+	}
+	public void setRefNo(int refNo) {
+		this.refNo = refNo;
+	}
+	public int getLevNo() {
+		return levNo;
+	}
+	public void setLevNo(int levNo) {
+		this.levNo = levNo;
+	}
+	public int getOrdNo() {
+		return ordNo;
+	}
+	public void setOrdNo(int ordNo) {
+		this.ordNo = ordNo;
+	}
+	public int getParentNo() {
+		return parentNo;
+	}
+	public void setParentNo(int parentNo) {
+		this.parentNo = parentNo;
+	}
+	public int getNo() {
+		return no;
+	}
+	public void setNo(int no) {
+		this.no = no;
+	}
+	@Override
+	public String toString() {
+		return "ReplyDTO [replyNo=" + replyNo + ", id=" + id + ", content=" + content + ", writeDate=" + writeDate
+				+ ", refNo=" + refNo + ", levNo=" + levNo + ", ordNo=" + ordNo + ", parentNo=" + parentNo + ", no=" + no
+				+ "]";
+	}
+}

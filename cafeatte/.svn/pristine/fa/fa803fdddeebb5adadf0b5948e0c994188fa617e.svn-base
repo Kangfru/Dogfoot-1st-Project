@@ -1,0 +1,5 @@
+package com.cafeatte.userCafe.service;
+
+public class UserCafeUpdateService {
+
+}

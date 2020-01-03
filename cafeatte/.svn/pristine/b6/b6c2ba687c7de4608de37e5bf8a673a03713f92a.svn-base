@@ -1,0 +1,33 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>로그인</title>
+</head>
+
+<body>
+	<div class="container">
+		<h2>로그인에 실패했습니다. 아이디와 비밀번호를 다시 확인해주세요.</h2>
+		<form action="login.do" method="post">
+			<div class="form-group">
+				<label for="ID">ID : </label> <input type="text"
+					class="form-control" id="id" placeholder="Enter ID" maxlength="20"
+					required="required" pattern="^[A-Za-z][A-za-z0-9]{3,19}$"
+					title="4-20영숫자, 맨 앞자는 영문자" name="id" />
+			</div>
+			<div class="form-group">
+				<label for="pw">비밀번호 : </label> <input type="password"
+					class="form-control" id="pw" placeholder="Enter password"
+					maxlength="20" required="required" pattern="^.{4,20}$"
+					title="4-20이내의 글자 입력" name="pw" />
+			</div>
+			<button type="submit" class="btn btn-default">Login</button>
+		</form>
+		<hr/>
+		<h3>아직 카페어때의 멤버가 아니세요? 가입을 통해 다양한 혜택과 정보를 누려보세요!</h3>
+		<a href="joinForm.do"><button class="btn btn-default">Sign in</button></a>
+	</div>
+</body>
+</html>

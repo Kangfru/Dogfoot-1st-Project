@@ -1,0 +1,58 @@
+package com.cafeatte.cafe.controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.cafeatte.main.Controller;
+import com.cafeatte.main.Execute;
+import com.cafeatte.main.Service;
+import com.cafeatte.util.page.PageObject;
+
+public class CafeController implements Controller {
+	private Service listService;
+	private Service viewService;
+	private Service writeService;
+	private Service updateService;
+	private Service deleteService;
+	
+	private Service replyListService;
+	private Service replyWriteService;
+	private Service replyUpdateService;
+	private Service replyDeleteService;
+	
+	public CafeController(Service listService, Service viewService, Service writeService, Service updateService, Service deleteService, 
+			Service replyListService, Service replyWriteService, Service replyUpdateService, Service replyDeleteService) {
+		
+		this.listService = listService;
+		this.viewService = viewService;
+		this.writeService = writeService;
+		this.updateService = updateService;
+		this.deleteService = deleteService;
+
+		this.replyListService = replyListService;
+		this.replyWriteService = replyWriteService;
+		this.replyUpdateService = replyUpdateService;
+		this.replyDeleteService = replyDeleteService;
+	}
+	@Override
+	public String execute(HttpServletRequest request, HttpServletResponse response, String uri) throws Exception {
+		// TODO Auto-generated method stub
+		System.out.println("CafeController.execute()");
+		String jsp = "";
+		PageObject pageObject = PageObject.getInstance(request.getParameter("page"), request.getParameter("perPageNum"));
+		switch(uri) {
+		case "/cafe/list.do":
+			System.out.println("CafeController.execute().list");
+			request.setAttribute("pageObject", pageObject);
+			request.setAttribute("list", Execute.service(listService, pageObject));
+			jsp="cafe/list";
+			break;
+		default:
+			break;
+		}//switch end
+		
+		System.out.println("CafeController.execute().jsp : " + jsp);
+		return jsp;
+	}
+
+}

@@ -1,0 +1,44 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+
+	<table>
+		<tr>
+			<td>글번호</td>
+			<td>제목</td>
+			<td>닉네임</td>
+			<td>이미지</td>
+			<td>작성일</td>
+			<td>조회수</td>
+			<td>좋아요</td>
+
+		</tr>
+		<c:forEach items="${list }" var="dto">
+			<tr>${dto.no}</tr>
+			<tr>${dto.title}</tr>
+			<tr>${dto.nickName}</tr>
+			<tr>${dto.fileName}</tr>
+			<tr>${dto.writeDate}</tr>
+			<tr>${dto.hit}</tr>
+			<tr>${dto.cntLike}</tr>
+		</c:forEach>
+		
+		<tr>
+			<td><a href="writeForm.do"><button>글쓰기</button></a></td>
+			<td><a href="list.do"><button>글쓰기</button></a></td>
+			
+		</tr>
+	</table>
+
+
+</body>
+</html>

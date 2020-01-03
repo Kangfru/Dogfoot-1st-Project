@@ -1,0 +1,13 @@
+package com.cafeatte.userCafe.service;
+
+import com.cafeatte.main.Service;
+import com.cafeatte.userCafe.dao.UserCafeDAO;
+
+public class UserCafeListService implements Service {
+
+	private UserCafeDAO dao;
+	public UserCafeListService(UserCafeDAO dao) {
+		this.dao = dao;
+	}
+	
+}

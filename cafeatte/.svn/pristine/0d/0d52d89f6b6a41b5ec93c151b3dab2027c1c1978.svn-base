@@ -1,0 +1,55 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>UserCafe Write Form</title>
+
+<script type="text/javascript" src="/js/regExUtil.js"></script>
+<script type="text/javascript">
+	$(function(){
+		$("#writeForm").submit(function() {
+			alert($("#fileName").val)
+			if(!inputDataCheck(title_RegEx, "#title", title_err_msg))
+				return false;
+			if(!inputDataCheck(content_RegEx, "#content", content_err_msg))
+				return false;
+		});
+	});
+
+
+
+</script>
+</head>
+<body>
+	<h2>회원 추천 카페 - 글쓰기</h2>
+	
+	<form action="write.do?page=${param.page }&perPageNum=${param.perPageNum}" method="post" id="writeForm" enctype="multipart/form-data">
+		<input name="perPageNum" value="${param.perPageNum }" type="hidden">
+		<!-- 사용자 id는 notnull이므로 hidden으로 보낸다. -->
+		<input type="hidden" value="${login.id }" name="id">
+		<div class="form-group">
+			<label for="title">제목</label>
+			<input type="text" class="form-control" id="title" name="title"
+			title="제목을 4~100글자 사이로 입력해주세요.">
+		</div>
+		
+		<div class="form-group">
+			<label for="fileName">첨부파일</label>
+			<input type="file" class="form-control" id="fileName" name="fileName">
+		</div>
+		
+		<div class="form-group">
+			<label for="content">내용</label>
+			<textarea class="form-control" id="content" name="content" rows="10"></textarea>
+		</div>
+		
+		<button>등록</button>
+		<button onclick="history.back()">글쓰기취소</button>
+	</form>
+
+</body>
+</html>

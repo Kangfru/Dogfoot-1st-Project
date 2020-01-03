@@ -1,0 +1,19 @@
+package com.cafeatte.userCafe.service;
+
+import com.cafeatte.main.Service;
+import com.cafeatte.userCafe.dao.UserCafeDAO;
+
+public class UserCafeListService implements Service {
+
+	private UserCafeDAO dao;
+	public UserCafeListService(UserCafeDAO dao) {
+		this.dao = dao;
+	}
+	
+	@Override
+	public Object service(Object[] objs) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+}

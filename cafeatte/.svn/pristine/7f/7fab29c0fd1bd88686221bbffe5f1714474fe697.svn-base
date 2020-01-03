@@ -1,0 +1,215 @@
+<%@page import="com.cafeatte.bean.Beans"%>
+<%@page import="com.cafeatte.main.Service"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>카페어때</title>
+<style type="text/css">
+td {
+	padding: 5px
+}
+
+.gray {
+	font-size: 10px;
+}
+ul{
+padding: 16px 0;
+}
+ul li.tag-item {
+	padding: 4px 8px;
+	background-color: #000;
+	color: #fff;
+}
+
+
+.tag-item:hover {
+	background-color: orange;
+	color: #fff;
+}
+
+.del-btn{
+font-size: 12px;
+font-wdight: bold;
+cursor: pointer;
+margin-left: 8px;
+}
+</style>
+<script>
+    $(document).ready(function () {
+    	 var tag = {};
+         var counter = 0;
+         var tagValue = "";
+         
+    	var str = "${hTags}";
+    	if( str !== ""){
+    		tagValue=str.split(',');
+    		for (var i = 0; i < tagValue.length; i++) {
+		    	$("#tag-list").append("<li class='tag-item'>"+tagValue[i]+"<span class='del-btn' idx='"+counter+"'>x</span></li>");
+		        addTag(tagValue[i]);				
+			}
+    	}
+
+        // 태그를 추가한다.
+        function addTag (value) {
+            tag[counter] = value; // 태그를 Object 안에 추가
+            counter++; // counter 증가 삭제를 위한 del-btn 의 고유 id 가 된다.
+        }
+
+        // 최종적으로 서버에 넘길때 tag 안에 있는 값을 array type 으로 만들어서 넘긴다.
+        function marginTag () {
+            return Object.values(tag).filter(function (word) {
+                return word !== "";
+            });
+        }
+    
+        // 서버에 넘기기
+        $("#cafe-form").on("submit", function (e) {
+            var value = marginTag(); // return array
+            $("#hTag").val(value); 
+            $(this).submit();
+        });
+
+        $("#tag").on("keypress", function (e) {
+            var self = $(this);
+
+            // input 에 focus 되있을 때 엔터 및 스페이스바 입력시 구동
+            if (e.key === "Enter" || e.keyCode == 32) {
+
+                tagValue = self.val(); // 값 가져오기
+
+                // 값이 없으면 동작 ㄴㄴ
+                if (tagValue !== "") {
+
+                    // 같은 태그가 있는지 검사한다. 있다면 해당값이 array 로 return 된다.
+                    var result = Object.values(tag).filter(function (word) {
+                        return word === tagValue;
+                    })
+                
+                    // 태그 중복 검사
+                    if (result.length == 0) { 
+                        $("#tag-list").append("<li class='tag-item'>"+tagValue+"<span class='del-btn' idx='"+counter+"'>x</span></li>");
+                        addTag(tagValue);
+                        self.val("");
+                    } else {
+                        alert("태그값이 중복됩니다.");
+                    }
+                }
+                e.preventDefault(); // SpaceBar 시 빈공간이 생기지 않도록 방지
+            }
+        });
+
+        // 삭제 버튼 
+        // 삭제 버튼은 비동기적 생성이므로 document 최초 생성시가 아닌 검색을 통해 이벤트를 구현시킨다.
+        $(document).on("click", ".del-btn", function (e) {
+            var index = $(this).attr("idx");
+            tag[index] = "";
+            $(this).parent().remove();
+        });
+})
+</script>
+</head>
+<body>`
+	<form id="cafe-form" action="update.do" method="post" enctype="multipart/form-data">
+		<input type="hidden" name="no" value="${param.no }">
+		<input type="hidden" name="cnt" value="0">
+		<input type="hidden" name="page" value="${param.page }">
+		<input type="hidden" name="perPageNum" value="${param.perPageNum }">
+		<input type="hidden" name="deleteFile1" value="${dto.fileName1 }">
+		<input type="hidden" name="deleteFile2" value="${dto.fileName2 }">
+		<input type="hidden" name="deleteFile3" value="${dto.fileName3 }">
+		<div>
+			<font size="30px"><b><input type="text" id="title"
+					name="title" value="${dto.title }"></b></font>
+		</div>
+		<div>
+			<table class="gray">
+				<tr height="25px">
+					<td width="100px" align="left">Hit: ${dto.hit }</td>
+					<td width="100px" align="left">Comment : ${dto.replyCnt }</td>
+					<td width="350" align="right">${dto.writeDate }</td>
+				</tr>
+			</table>
+		</div>
+		<hr style="margin: 2px; border: solid 1px; width: 550px">
+		<div class="content">
+			<table style="margin-top: 10px;">
+				<tr>
+					<td width="70px">주소</td>
+					<td width="20px" align="center"><b>|</b></td>
+					<td><input type="text" id="addr" name="addr"
+						value="${dto.addr }"></td>
+				</tr>
+				<tr>
+					<td>전화번호</td>
+					<td align="center"><b>|</b></td>
+					<td><input type="text" id="tel" name="tel" value="${dto.tel }"></td>
+				</tr>
+				<tr>
+					<td>주차공간</td>
+					<td align="center"><b>|</b></td>
+					<td><input type="text" id="parking" name="parking"
+						value="${dto.parking }"></td>
+				</tr>
+				<tr>
+					<td>영업시간</td>
+					<td align="center"><b>|</b></td>
+					<td><input type="text" id="open" name="open"
+						value="${dto.open }"></td>
+				</tr>
+				<tr>
+					<td>휴무일</td>
+					<td align="center"><b>|</b></td>
+					<td><input type="text" id="holiday" name="holiday"
+						value="${dto.holiday }"></td>
+				</tr>
+				<tr>
+					<td>메뉴</td>
+					<td align="center"><b>|</b></td>
+				</tr>
+				<tr>
+					<td colspan="3"><textarea id="menu" name="menu" rows="15"
+							cols="90">${dto.menu }</textarea></td>
+				</tr>
+				<tr>
+					<td>첨부파일</td>
+					<td align="center"><b>|</b></td>
+				</tr>
+				<tr>
+				<tr>
+					<td colspan="2">List Image : <font color="lightGray">${dto.fileName1 }</font></td>
+					<td><input type="file" id="fileName1" name="fileName1"></td>
+				</tr>
+				<tr>
+					<td colspan="2">Top Image : <font color="lightGray">${dto.fileName2 }</font></td>
+					<td><input type="file" id="fileName2" name="fileName2"></td>
+				</tr>
+				<tr>
+					<td colspan="2">Etc Image : <font color="lightGray">${dto.fileName3 }</font></td>
+					<td><input type="file" id="fileName3" name="fileName3"></td>
+				</tr>
+				<tr>
+					<td>해시태그</td>
+					<td align="center"><b>|</b></td>
+					<td><input type="text" id="tag" size="20" placeholder="해시태그"/></td>
+				</tr>
+				<tr>
+					<td colspan="3"><ul id="tag-list"></ul></td>
+				</tr>
+				<tr><td>
+				<input type="hidden" value="" name="hTag" id="hTag"/>
+				</td></tr>
+			</table>
+		</div>
+		<div style="width: 550px" align="right">
+			<input type="submit" value="수정완료"> <input type="reset"
+				value="다시입력"> <input type="button" onclick="history.back()"
+				value="취소"> <input type="button" value="목록"
+				onclick="list.do?page=1">
+		</div>
+	</form>
+</body>
+</html>

@@ -1,0 +1,73 @@
+package com.cafeatte.notice.controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.cafeatte.main.Controller;
+import com.cafeatte.main.Service;
+import com.cafeatte.main.Execute;
+import com.cafeatte.util.page.PageObject;
+
+public class NoticeController implements Controller {
+
+	private Service listService;
+	
+	public NoticeController(Service listService) {
+		this.listService = listService;
+	}
+	
+	@Override
+	public String execute(HttpServletRequest request, HttpServletResponse response, 
+			String uri) throws Exception {
+		String jsp = "";
+		
+		PageObject pageObject = PageObject.getInstance(request.getParameter("page"),
+				request.getParameter("perpageNum"));
+		
+		String key = request.getParameter("key");
+		String word = request.getParameter("word");
+		
+		if(word != null) {
+			pageObject.setKey(key);
+			pageObject.setWord(word);
+		}
+		
+		switch (uri) {
+		case "/notice/list.do":
+			request.setAttribute("pageObject", pageObject);
+			request.setAttribute("list", Execute.service(listService, pageObject)); 
+			jsp = "notice/list";
+			break;
+			
+		case "/notice/view.do":
+			System.out.println("noticeexecute");
+			
+			int no = Integer.parseInt(request.getParameter("no"));
+			int cnt = Integer.parseInt(request.getParameter("cnt"));
+			
+			request.setAttribute("dto", Execute.service(viewService, no, cnt));
+			jsp ="notice/view";
+			break;
+			
+		case "/notice/write.do":
+			jsp = "rediect:list.do";
+			break;
+			
+		case "/notice/update.do":
+			jsp = "rediect:list.do";
+			break;
+			
+		case "/notice/delete.do":
+			Execute.service(deleteService, Integer.parseInt(request.getParameter("no")));
+			
+			jsp = "redirect:list.do";
+			break;
+			
+		default:
+			break;
+		}
+		
+		System.out.println("NoticeController.execute().jsp:"+jsp);
+		return jsp;
+	}
+}

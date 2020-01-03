@@ -1,0 +1,92 @@
+package com.cafeatte.qna.controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.cafeatte.main.Controller;
+import com.cafeatte.main.Execute;
+import com.cafeatte.main.Service;
+import com.cafeatte.util.page.PageObject;
+
+
+
+public class QnaController implements Controller {
+
+	private Service listService; 
+	private Service viewService; 
+	private Service writeService; 
+	private Service updateService; 
+	private Service deleteService; 
+	private Service answerService; 
+
+	// 생성자를 이용해서 service DI(Dependent 적용 --> Beans에서 생성 후 넣어 준다. 
+	public QnaController(
+			Service listService,
+			Service viewService,
+			Service writeService,
+			Service updateService,
+			Service deleteService, 
+			Service answerservice) {
+		// TODO Auto-generated constructor stub
+		
+		this.listService = listService;
+		this.viewService = viewService;
+		this.writeService = writeService;
+		this.updateService = updateService;
+		this.deleteService = deleteService;
+		this.answerService = answerService;
+	}
+	
+	
+	@Override
+	public String execute(HttpServletRequest request,
+			HttpServletResponse response, String uri) 
+			throws Exception {
+		// TODO Auto-generated method stub
+		
+		// 공통으로 사용되는 변수 (초기값셋팅)
+		String jsp = "";
+		PageObject pageObject =PageObject.getInstance(request.getParameter("page"), 
+				request.getParameter("perPageNum"));
+		
+		
+		//jsp에서 자바 부분을 여기에 넣는다. 
+		switch(uri) {
+		case "/qna/list.do":
+			request.setAttribute("pageObject", pageObject);
+			request.setAttribute("list", Execute.service(listService,pageObject));
+			
+			jsp = "qna/list";
+			
+			break;
+
+		case "/qna/view.do":	
+			
+			int no = Integer.parseInt(request.getParameter("no"));   
+			int cnt = Integer.parseInt(request.getParameter("cnt"));   
+			request.setAttribute("dto", Execute.service(viewService, no, cnt));
+				
+			jsp = "qna/view";
+			
+			;
+			break;
+		case "/qna/writeForm.do":	
+			jsp = "qna/writeForm";
+			break;
+			
+		case "/qna/delete.do":	
+			 
+			Execute.service(deleteService, Integer.parseInt(request.getParameter("no")));
+			jsp = "redirect:list.do";
+			break;
+		
+				
+		default:
+			break;
+		}
+		System.out.println("QnaController.execute().jsp"+jsp);
+		return jsp;
+	}
+
+
+}

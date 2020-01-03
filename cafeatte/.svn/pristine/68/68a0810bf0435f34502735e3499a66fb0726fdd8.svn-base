@@ -1,0 +1,251 @@
+package com.cafeatte.bean;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.Servlet;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+
+import com.cafeatte.cafe.controller.CafeController;
+import com.cafeatte.cafe.dao.CafeDAO;
+import com.cafeatte.cafe.service.CafeDeleteService;
+import com.cafeatte.cafe.service.CafeHTagViewService;
+import com.cafeatte.cafe.service.CafeListService;
+import com.cafeatte.cafe.service.CafeReplyDeleteService;
+import com.cafeatte.cafe.service.CafeReplyListService;
+import com.cafeatte.cafe.service.CafeReplyUpdateService;
+import com.cafeatte.cafe.service.CafeReplyWriteService;
+import com.cafeatte.cafe.service.CafeUpdateService;
+import com.cafeatte.cafe.service.CafeViewService;
+import com.cafeatte.cafe.service.CafeWriteService;
+import com.cafeatte.magazine.controller.MagazineController;
+import com.cafeatte.magazine.dao.MagazineDAO;
+import com.cafeatte.magazine.service.MagazineDeleteService;
+import com.cafeatte.magazine.service.MagazineListService;
+import com.cafeatte.magazine.service.MagazineUpdateService;
+import com.cafeatte.magazine.service.MagazineViewService;
+import com.cafeatte.magazine.service.MagazineWriteService;
+import com.cafeatte.magazine.service.MagazinemListService;
+import com.cafeatte.main.AjaxController;
+import com.cafeatte.main.Controller;
+import com.cafeatte.main.Service;
+import com.cafeatte.member.controller.MemberController;
+import com.cafeatte.member.dao.MemberDAO;
+import com.cafeatte.member.service.MemberChangeGradeService;
+import com.cafeatte.member.service.MemberChangePwService;
+import com.cafeatte.member.service.MemberChangeStateService;
+import com.cafeatte.member.service.MemberFindIdService;
+import com.cafeatte.member.service.MemberFindPwFormService;
+import com.cafeatte.member.service.MemberFindPwService;
+import com.cafeatte.member.service.MemberIdCheckService;
+import com.cafeatte.member.service.MemberJoinService;
+import com.cafeatte.member.service.MemberListService;
+import com.cafeatte.member.service.MemberLoginService;
+import com.cafeatte.member.service.MemberPwCheckService;
+import com.cafeatte.member.service.MemberSignOutService;
+import com.cafeatte.member.service.MemberUpdateService;
+import com.cafeatte.member.service.MemberViewService;
+import com.cafeatte.notice.controller.NoticeController;
+import com.cafeatte.notice.dao.NoticeDAO;
+import com.cafeatte.notice.service.NoticeDeleteService;
+import com.cafeatte.notice.service.NoticeListService;
+import com.cafeatte.notice.service.NoticeUpdateService;
+import com.cafeatte.notice.service.NoticeViewService;
+import com.cafeatte.notice.service.NoticeWriteService;
+import com.cafeatte.qna.controller.QnaController;
+import com.cafeatte.qna.dao.QnaDAO;
+import com.cafeatte.qna.service.QnaAnswerService;
+import com.cafeatte.qna.service.QnaDeleteService;
+import com.cafeatte.qna.service.QnaListService;
+import com.cafeatte.qna.service.QnaUpdateService;
+import com.cafeatte.qna.service.QnaViewService;
+import com.cafeatte.qna.service.QnaWriteService;
+import com.cafeatte.userCafe.controller.UserCafeController;
+import com.cafeatte.userCafe.dao.UserCafeDAO;
+import com.cafeatte.userCafe.service.UserCafeDeleteService;
+import com.cafeatte.userCafe.service.UserCafeListService;
+import com.cafeatte.userCafe.service.UserCafeUpdateService;
+import com.cafeatte.userCafe.service.UserCafeViewService;
+import com.cafeatte.userCafe.service.UserCafeWriteService;
+
+/**
+ * Servlet implementation class Beans
+ */
+@WebServlet(urlPatterns = "/init", loadOnStartup = 1)
+public class Beans extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+       
+	private static Map<String, Controller> controllers = new HashMap<>();
+	private static Map<String, Service> services = new HashMap<>();
+	private static Map<String, Object> daos = new HashMap<>();
+	
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public Beans() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see Servlet#init(ServletConfig)
+	 */
+	public void init(ServletConfig config) throws ServletException {
+		// TODO Auto-generated method stub
+		System.out.println("Beans.init().start()");
+		
+		//공지
+		daos.put("noticeDAO", new NoticeDAO());
+		
+		services.put("noticeListService", new NoticeListService((NoticeDAO) daos.get("noticeDAO")));
+		services.put("noticeViewService", new NoticeViewService((NoticeDAO) daos.get("noticeDAO")));
+		services.put("noticeWriteService", new NoticeWriteService((NoticeDAO) daos.get("noticeDAO")));
+		services.put("noticeUpdateService", new NoticeUpdateService((NoticeDAO) daos.get("noticeDAO")));
+		services.put("noticeDeleteService", new NoticeDeleteService((NoticeDAO) daos.get("noticeDAO")));
+		
+		controllers.put("noticeController", new NoticeController(
+				services.get("noticeListService"),
+				services.get("noticeViewService"),
+				services.get("noticeWriteService"),
+				services.get("noticeUpdateService"),
+				services.get("noticeDeleteService")
+				));
+		//Member
+		System.out.println("Beans.init().Member() 초기화...");
+		daos.put("memberDAO", new MemberDAO());
+		
+		services.put("memberChangePwSerivce", new MemberChangePwService((MemberDAO) daos.get("memberDAO")));
+		services.put("memberFindIdService", new MemberFindIdService((MemberDAO) daos.get("memberDAO")));
+		services.put("memberFindPwService", new MemberFindPwService((MemberDAO) daos.get("memberDAO")));
+		services.put("memberJoinService", new MemberJoinService((MemberDAO) daos.get("memberDAO")));
+		services.put("memberListService", new MemberListService((MemberDAO) daos.get("memberDAO")));
+		services.put("memberLoginService", new MemberLoginService((MemberDAO) daos.get("memberDAO")));
+		services.put("memberSignOutService", new MemberSignOutService((MemberDAO) daos.get("memberDAO")));
+		services.put("memberViewService", new MemberViewService((MemberDAO) daos.get("memberDAO")));
+		services.put("memberPwCheckService", new MemberPwCheckService((MemberDAO) daos.get("memberDAO")));
+		services.put("memberUpdateService", new MemberUpdateService((MemberDAO) daos.get("memberDAO")));
+		services.put("memberChangeStateService", new MemberChangeStateService((MemberDAO) daos.get("memberDAO")));
+		services.put("memberChangeGradeService", new MemberChangeGradeService((MemberDAO) daos.get("memberDAO")));
+		services.put("memberFindPwFormService", new MemberFindPwFormService((MemberDAO) daos.get("memberDAO")));
+		
+		controllers.put("memberController", new MemberController(services.get("memberChangePwService"), services.get("memberFindIdService"), 
+				services.get("memberFindPwService"), services.get("memberJoinService"), 
+				services.get("memberListService"), services.get("memberLoginService"), 
+				services.get("memberSignOutService"), services.get("memberViewService"),
+				services.get("memberPwCheckService"), services.get("memberUpdateService"),
+				services.get("memberChangeStateService"), services.get("memberChangeGradeService"),
+				services.get("memberFindPwFormService")));
+		
+		// ajax
+		services.put("memberIdCheckService", new MemberIdCheckService((MemberDAO) daos.get("memberDAO")));
+		controllers.put("ajaxController", new AjaxController(services.get("memberIdCheckService")));
+		
+		System.out.println("Beans.init().Member() 초기화 완료");
+		//Cafe
+		System.out.println("Beans.init().Cafe() 초기화...");
+		daos.put("cafeDAO", new CafeDAO());
+		services.put("cafeListService", new CafeListService((CafeDAO) daos.get("cafeDAO")));
+		services.put("cafeViewService", new CafeViewService((CafeDAO) daos.get("cafeDAO")));
+		services.put("cafeHTagViewService", new CafeHTagViewService((CafeDAO) daos.get("cafeDAO")));
+		services.put("cafeWriteService", new CafeWriteService((CafeDAO) daos.get("cafeDAO")));
+		services.put("cafeUpdateService", new CafeUpdateService((CafeDAO) daos.get("cafeDAO")));
+		services.put("cafeDeleteService", new CafeDeleteService((CafeDAO) daos.get("cafeDAO")));
+		services.put("cafeReplyListService", new CafeReplyListService((CafeDAO) daos.get("cafeDAO")));
+		services.put("cafeReplyWriteService", new CafeReplyWriteService((CafeDAO) daos.get("cafeDAO")));
+		services.put("cafeReplyUpdateService", new CafeReplyUpdateService((CafeDAO) daos.get("cafeDAO")));
+		services.put("cafeReplyDeleteService", new CafeReplyDeleteService((CafeDAO) daos.get("cafeDAO")));
+		controllers.put("cafeController", new CafeController(services.get("cafeListService"),services.get("cafeViewService"),services.get("cafeHTagViewService"),
+				services.get("cafeWriteService"),services.get("cafeUpdateService"),
+				services.get("cafeDeleteService"),
+				services.get("cafeReplyListService"),services.get("cafeReplyWriteService"),
+				services.get("cafeReplyUpdateService"),services.get("cafeReplyDeleteService")));
+		System.out.println("Beans.init().Cafe() 초기화 완료");
+		//UserCafe
+		System.out.println("Beans.init().UserCafe() 초기화...");
+		daos.put("userCafeDAO", new UserCafeDAO());
+		services.put("userCafeListService", new UserCafeListService((UserCafeDAO) daos.get("userCafeDAO"))); 
+		services.put("userCafeViewService", new UserCafeViewService((UserCafeDAO) daos.get("userCafeDAO"))); 
+		services.put("userCafeWriteService", new UserCafeWriteService((UserCafeDAO) daos.get("userCafeDAO"))); 
+		services.put("userCafeUpdateService", new UserCafeUpdateService((UserCafeDAO) daos.get("userCafeDAO"))); 
+		services.put("userCafeDeleteService", new UserCafeDeleteService((UserCafeDAO) daos.get("userCafeDAO"))); 
+		controllers.put("userCafeController", 
+				new UserCafeController(services.get("userCafeListService"),
+						services.get("userCafeViewService"),
+						services.get("userCafeWriteService"),
+						services.get("userCafeUpdateService"),
+						services.get("userCafeDeleteService")));
+		System.out.println("Beans.init().UserCafe() 초기화 완료");
+		
+		//Magazine
+		System.out.println("Beans.init().Magazine() 초기화...");
+		daos.put("magazineDAO", new MagazineDAO());
+		services.put("magazineListService", new MagazineListService((MagazineDAO) daos.get("magazineDAO")));
+		services.put("magazineViewService", new MagazineViewService((MagazineDAO) daos.get("magazineDAO")));
+		services.put("magazineWriteService", new MagazineWriteService((MagazineDAO) daos.get("magazineDAO")));
+		services.put("magazineUpdateService", new MagazineUpdateService((MagazineDAO) daos.get("magazineDAO")));
+		services.put("magazineDeleteService", new MagazineDeleteService((MagazineDAO) daos.get("magazineDAO")));
+		services.put("magazinemListService", new MagazinemListService((MagazineDAO) daos.get("magazineDAO")));
+	
+		controllers.put("magazineController", 
+				new MagazineController(
+				services.get("magazineListService"), 
+				services.get("magazineViewService"), 
+				services.get("magazineWriteService"), 
+				services.get("magazineUpdateService"), 
+				services.get("magazineDeleteService"), 
+				services.get("magazinemListService") 
+			
+				));
+		
+		System.out.println("Beans.init().Magazine() 초기화 완료");
+		
+		//QnA
+		System.out.println("Beans.init().QnA() 초기화...");
+		
+		daos.put("qnaDAO", new QnaDAO());
+		services.put("qnaListServce", new QnaListService((QnaDAO) daos.get("qnaDAO")));
+		services.put("qnaViewService", new QnaViewService((QnaDAO) daos.get("qnaDAO")));
+		services.put("qnaUpdateService", new QnaUpdateService((QnaDAO) daos.get("qnaDAO")));
+		services.put("qnaWriteService", new QnaWriteService((QnaDAO) daos.get("qnaDAO")));
+		services.put("qnaDeleteService", new QnaDeleteService((QnaDAO) daos.get("qnaDAO")));
+		services.put("qnaAnswerService", new QnaAnswerService((QnaDAO) daos.get("qnaDAO")));
+	
+		controllers.put("qnaController", 
+				new QnaController(
+				services.get("qnaListService"), 
+				services.get("qnaViewService"), 
+				services.get("qnaUpdateService"), 
+				services.get("qnaWriteService"), 
+				services.get("qnaDeleteService"), 
+				services.get("qnaAnswerService") 
+				));
+		
+		System.out.println("Beans.init().QnA() 초기화 완료");
+		
+		
+		//Coupon
+		System.out.println("Beans.init().Coupon() 초기화...");
+		System.out.println("Beans.init().Coupon() 초기화 완료");
+		//Notice
+		System.out.println("Beans.init().Notice() 초기화...");
+		System.out.println("Beans.init().Notice() 초기화 완료");
+		
+		
+		System.out.println("Beans.init().finish()");
+	}// init end
+	
+	public static Service getService(String name) {
+		return services.get(name);
+
+	}//getService end
+
+	public static Controller getController(String name) {
+		// TODO Auto-generated method stub
+		return controllers.get(name);
+	}//getController end
+	
+
+}

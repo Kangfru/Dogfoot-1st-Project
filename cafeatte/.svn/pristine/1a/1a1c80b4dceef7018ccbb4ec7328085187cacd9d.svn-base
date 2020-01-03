@@ -1,0 +1,31 @@
+package com.cafeatte.cafe.controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.cafeatte.main.Controller;
+import com.cafeatte.main.Service;
+
+public class CafeController implements Controller {
+	private Service listService;
+	private Service viewService;
+	private Service writeService;
+	private Service updateService;
+	private Service deleteService;
+	
+	private Service replyListService;
+	private Service replyWriteService;
+	private Service replyUpdateService;
+	private Service replyDeleteService;
+	
+	public CafeController(Service listService, Service viewService, Service writeService, Service updateService, Service deleteService, 
+			Service replyListService, Service replyWriteService, Service replyUpdateService, Service replyDeleteService) {
+		// TODO Auto-generated constructor stub
+	}
+	@Override
+	public String execute(HttpServletRequest request, HttpServletResponse response, String uri) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}
